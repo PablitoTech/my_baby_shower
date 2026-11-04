@@ -1,12 +1,12 @@
 import path from 'node:path';
-import { config } from 'dotenv';
 import type { NextConfig } from 'next';
+import { loadEnv } from '../../config/load-env';
 
 const root = path.resolve(import.meta.dirname, '..', '..');
 
-// En local las variables y credenciales se leen del `.env` de la raíz del
-// monorepo (no versionado). En Vercel se definen en el panel del proyecto.
-config({ path: path.join(root, '.env'), quiet: true });
+// Perfil local: `next dev` → .env.development, `next build`/`start` → .env.production.
+// En Vercel las variables se definen en el panel del proyecto.
+loadEnv();
 
 const isProd = process.env.NODE_ENV === 'production';
 

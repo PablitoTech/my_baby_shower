@@ -11,9 +11,14 @@ next-env.d.ts
 .vercel
 
 # Entorno y credenciales (NO versionar)
+# Perfiles locales: .env.development, .env.test, .env.production (y variantes .local).
+# Aplica en cualquier carpeta del monorepo. Solo se versiona la plantilla .env.example.
 .env
 .env.*
+**/.env
+**/.env.*
 !.env.example
+!**/.env.example
 
 # Prisma generado
 apps/web/src/generated/

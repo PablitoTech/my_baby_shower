@@ -1,10 +1,8 @@
-import path from 'node:path';
-import { config } from 'dotenv';
 import { defineConfig } from 'prisma/config';
+import { loadEnv } from './config/load-env';
 
-// En local las variables y credenciales se cargan de `.env` (no versionado).
-// En Vercel/CI llegan como variables de entorno del proyecto.
-config({ path: path.resolve(import.meta.dirname, '.env'), quiet: true });
+// Perfil local `.env.<APP_ENV>` (development por defecto). Ver config/load-env.ts.
+loadEnv();
 
 export default defineConfig({
   schema: 'prisma/schema.prisma',

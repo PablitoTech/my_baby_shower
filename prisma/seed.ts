@@ -2,11 +2,10 @@
  * Carga datos iniciales: categorías de regalos.
  * Idempotente: puede ejecutarse varias veces sin duplicar registros.
  */
-import path from 'node:path';
-import { config } from 'dotenv';
+import { loadEnv } from '../config/load-env';
 import { createPrismaClient } from '../apps/web/src/server/db/client';
 
-config({ path: path.resolve(import.meta.dirname, '..', '.env'), quiet: true });
+loadEnv();
 
 const CATEGORIES = [
   'HYGIENE',

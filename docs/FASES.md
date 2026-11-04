@@ -25,7 +25,7 @@ Este documento describe el plan de desarrollo incremental de **my_baby_shower**,
 
 Estados posibles: `Pendiente`, `En progreso`, `Completada`, `Bloqueada`.
 
-> **Última actualización:** 2026-11-04. Nota: desde la Fase 13 las variables y credenciales locales viven en `.env`, que reemplaza a `environment.m`. Todas las fases del MVP están completadas y verificadas. Al final de cada fase hay una sección **Resultado** con lo que se entregó.
+> **Última actualización:** 2026-11-04. Nota: desde la Fase 13 las variables y credenciales locales viven en perfiles `.env.development`, `.env.test` y `.env.production`, que reemplazan a `environment.m`. Todas las fases del MVP están completadas y verificadas. Al final de cada fase hay una sección **Resultado** con lo que se entregó.
 
 ---
 

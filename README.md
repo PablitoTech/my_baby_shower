@@ -53,7 +53,8 @@ my_baby_shower/
 ├── infrastructure/docker/       # PostgreSQL local opcional
 ├── docs/
 ├── prisma.config.ts
-├── .env                         # Variables y credenciales locales (NO versionado)
+├── .env.development / .env.test / .env.production   # Perfiles locales (NO versionados)
+├── config/load-env.ts           # Selección de perfil (APP_ENV)
 └── .env.example
 ```
 
@@ -65,23 +66,34 @@ my_baby_shower/
 ## Puesta en marcha
 
 ```bash
-# 1. Variables de entorno
-cp .env.example .env
-#    Edita DATABASE_URL y genera un secreto:  openssl rand -base64 48  → JWT_ACCESS_SECRET
+# 1. Perfiles de variables
+cp .env.example .env.development   # PostgreSQL local:  .../my_baby_shower?schema=public  (+ variables DB_*)
+cp .env.example .env.test          # PostgreSQL local:  .../my_baby_shower_test?schema=public (+ RATE_LIMIT_DISABLED=true)
+cp .env.example .env.production    # Aiven:  ...?schema=my_baby_shower&sslmode=require
+#    En cada uno: DATABASE_URL y un JWT_ACCESS_SECRET propio (openssl rand -base64 48)
 
-# 2. (Opcional) PostgreSQL local con Docker
+# 2. PostgreSQL local y dependencias (genera también el cliente Prisma)
 npm run db:up
-
-# 3. Dependencias (genera también el cliente Prisma)
 npm install
 
-# 4. Tablas y categorías iniciales
-npm run prisma:deploy
-npm run prisma:seed
+# 3. Tablas y categorías en cada esquema
+npm run prisma:deploy        && npm run prisma:seed        # dev
+npm run prisma:deploy:test   && npm run prisma:seed:test   # test
+npm run prisma:deploy:prod   && npm run prisma:seed:prod   # prod
 
-# 5. Desarrollo
+# 4. Desarrollo (perfil dev)
 npm run dev            # http://localhost:3000
 ```
+
+## Perfiles de entorno
+
+| Perfil | Archivo | Esquema | Lo usan |
+|---|---|---|---|
+| dev | `.env.development` | PostgreSQL local (Docker) `my_baby_shower` | `npm run dev` y los comandos de Prisma sin sufijo |
+| test | `.env.test` | PostgreSQL local (Docker) `my_baby_shower_test` | `npm run test:integration` y los comandos `:test` |
+| prod | `.env.production` | Aiven, esquema `my_baby_shower` | `npm run build` / `start` y los comandos `:prod` |
+
+El perfil se elige con `APP_ENV`; si no se define, se deduce de `NODE_ENV` (ver `config/load-env.ts`). Las pruebas de integración **borran datos** y se niegan a correr si la base o el esquema no terminan en `_test`. En Vercel no se usan archivos: las variables se definen en el panel.
 
 ## Base de datos
 
@@ -93,7 +105,7 @@ DATABASE_URL="postgresql://USUARIO:CONTRASENA@HOST:PUERTO/BASE_DE_DATOS?sslmode=
 
 - `schema` aísla las tablas del proyecto en su propio esquema de PostgreSQL. Así puede convivir con otras aplicaciones en la misma base, por ejemplo `finance_tracker` en Aiven.
 - `sslmode=require` cifra la conexión, algo obligatorio en Aiven. Si además defines `DATABASE_CA_CERT` con el certificado CA del proveedor, también se verifica el certificado del servidor.
-- Las variables `DB_*` solo las usa Docker Compose para la base local.
+- Las variables `DB_*` (solo en `.env.development`) las usa Docker Compose para la base local opcional.
 
 ## Comandos
 
@@ -103,11 +115,12 @@ DATABASE_URL="postgresql://USUARIO:CONTRASENA@HOST:PUERTO/BASE_DE_DATOS?sslmode=
 | `npm run build` / `npm start` | Build y servidor de producción |
 | `npm run typecheck` | Verificación de tipos |
 | `npm test` | Pruebas unitarias |
-| `npm run test:integration` | Pruebas de integración (crean `my_baby_shower_test` en el PostgreSQL **local**) |
-| `npm run prisma:deploy` | Aplica las migraciones pendientes a `DATABASE_URL` |
-| `npm run prisma:seed` | Carga las categorías (idempotente) |
+| `npm run test:integration` | Pruebas de integración contra el perfil test (`my_baby_shower_test`) |
+| `npm run prisma:deploy` · `:test` · `:prod` | Aplica las migraciones pendientes al perfil |
+| `npm run prisma:seed` · `:test` · `:prod` | Carga las categorías (idempotente) |
+| `npm run prisma:status` · `:prod` | Estado de las migraciones |
 | `npm run prisma:migrate` | Crea una migración nueva (desarrollo, interactivo) |
-| `npm run prisma:studio` | Abre Prisma Studio |
+| `npm run prisma:studio` · `:prod` | Abre Prisma Studio |
 | `npm run db:up` / `db:down` / `db:status` / `db:logs` / `db:psql` | PostgreSQL local con Docker |
 | `npm run db:destroy` | Elimina el contenedor y **borra los datos locales** |
 | `npm run audit` | Revisa vulnerabilidades |

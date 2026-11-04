@@ -1,6 +1,6 @@
 /* ---------- Marca ---------- */
 .c-brand {
-  display: inline-flex; align-items: center; gap: .55rem; text-decoration: none; color: var(--c-ink);
+  display: inline-flex; flex: none; align-items: center; gap: .55rem; text-decoration: none; color: var(--c-ink); white-space: nowrap;
   span { font: 600 1.15rem var(--font-display); letter-spacing: -.01em; }
   b { color: var(--c-pink-deep); font-weight: 600; }
 }

@@ -12,11 +12,11 @@ DATABASE_URL="postgresql://avnadmin:CONTRASENA@HOST.aivencloud.com:PUERTO/financ
 
 > ⚠️ No uses el esquema de otro proyecto (por ejemplo `finance_mgmt_dev`): `prisma migrate deploy` crearía sus tablas y su tabla `_prisma_migrations` dentro de ese esquema.
 
-Aplica las migraciones y el seed **desde tu equipo**, con `DATABASE_URL` apuntando a la base remota (en tu `.env` o en la terminal):
+Aplica las migraciones y el seed **desde tu equipo** con el perfil de producción (`.env.production`):
 
 ```bash
-npm run prisma:deploy
-npm run prisma:seed
+npm run prisma:deploy:prod
+npm run prisma:seed:prod
 ```
 
 ### Certificado SSL (recomendado)

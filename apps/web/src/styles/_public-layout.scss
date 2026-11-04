@@ -17,7 +17,7 @@
   
   .nav {
     display: none;
-    a:not(.btn) { color: var(--c-ink); text-decoration: none; font-weight: 600; }
+    a:not(.btn) { color: var(--c-ink); text-decoration: none; font-weight: 600; white-space: nowrap; }
     a:not(.btn):hover { color: var(--c-lavender-deep); }
   
     &.open {

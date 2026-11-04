@@ -46,8 +46,9 @@ my_baby_shower/
 │   └── shared/     lógica de dominio pura (estados, transiciones, slug)
 ├── prisma/         schema.prisma, migraciones y seed
 ├── infrastructure/docker/   PostgreSQL local opcional
-├── prisma.config.ts         lee .env
-└── .env                     variables y credenciales locales (no versionado)
+├── config/load-env.ts       elige el perfil .env.<APP_ENV>
+├── prisma.config.ts         carga el perfil activo
+└── .env.development · .env.test · .env.production   perfiles locales (no versionados)
 ```
 
 - Las librerías de `libs/` se publican como TypeScript (`exports: ./src/index.ts`) y Next las compila con `transpilePackages`, sin paso de build previo.
