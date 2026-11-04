@@ -13,7 +13,7 @@ Plataforma web para organizar y gestionar Baby Showers. Los futuros padres crean
 - Publicación del Baby Shower con un enlace no predecible y botón de copiar.
 - Página pública para invitados, con reserva sin registro. Los regalos agotados dejan de mostrarse.
 - Reservas transaccionales que nunca superan la cantidad disponible.
-- Administración de reservas: filtros, confirmación, cancelación, entrega e historial.
+- Administración de reservas: el invitado confirma al reservar y los padres marcan el regalo como entregado o cancelan la reserva; filtros e historial.
 - Interfaz en español (predeterminado) e inglés.
 
 ## Tecnologías
@@ -143,7 +143,7 @@ DATABASE_URL="postgresql://USUARIO:CONTRASENA@HOST:PUERTO/BASE_DE_DATOS?sslmode=
 | POST / DELETE | `/gifts/:id/image` | Privado | Subir o quitar la imagen (`multipart`, campo `image`) |
 | GET | `/images/:id` | Público | Servir la imagen de un regalo |
 | GET | `/reservations` | Privado | Historial (filtros `giftId` y `status`) |
-| PATCH | `/reservations/:id/status` | Privado | Confirmar, cancelar o entregar |
+| PATCH | `/reservations/:id/status` | Privado | Marcar como entregada o cancelar (`{ "status": "DELIVERED" \| "CANCELLED" }`) |
 | GET | `/public/baby-showers/:slug` | Público | Información pública y regalos disponibles |
 | POST | `/public/baby-showers/:slug/gifts/:giftId/reservations` | Público | Reservar |
 

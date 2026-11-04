@@ -65,7 +65,17 @@ export function useAuth(): AuthContextValue {
   return ctx;
 }
 
-/** Solo permite rutas internas (evita redirecciones abiertas). */
-export function safeReturnUrl(value: string | null): string {
-  return value?.startsWith('/') && !value.startsWith('//') ? value : '/dashboard';
+/**
+ * Solo permite rutas internas del mismo origen (evita redirecciones abiertas).
+ * Rechaza `//host`, `/\host` y cualquier valor que el navegador resuelva a otro origen.
+ */
+export function safeReturnUrl(value: string | null, origin = typeof window === 'undefined' ? 'http://localhost' : window.location.origin): string {
+  const fallback = '/dashboard';
+  if (!value || !value.startsWith('/') || value.includes('\\') || /^\/[\\/]/.test(value) || /[\u0000-\u001F]/.test(value)) return fallback;
+  try {
+    const url = new URL(value, origin);
+    return url.origin === origin ? `${url.pathname}${url.search}${url.hash}` : fallback;
+  } catch {
+    return fallback;
+  }
 }

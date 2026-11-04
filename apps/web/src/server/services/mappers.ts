@@ -50,7 +50,7 @@ export function toReservationDto(r: GiftReservation & { gift: Pick<Gift, 'id' | 
     quantity: r.quantity,
     message: r.message,
     status: r.status,
-    confirmedAt: r.confirmedAt?.toISOString() ?? null,
+    confirmedAt: r.confirmedAt.toISOString(),
     cancelledAt: r.cancelledAt?.toISOString() ?? null,
     deliveredAt: r.deliveredAt?.toISOString() ?? null,
     createdAt: r.createdAt.toISOString(),

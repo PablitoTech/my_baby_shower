@@ -1,11 +1,9 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import { I18nextProvider } from 'react-i18next';
-import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, isSupportedLanguage, type Language } from '@mbs/common';
-import i18n from '@/i18n';
-
-const STORAGE_KEY = 'mbs.lang';
+import { SUPPORTED_LANGUAGES, type Language } from '@mbs/common';
+import { LANGUAGE_COOKIE, createI18n } from '@/i18n';
 
 interface LanguageContextValue {
   language: Language;
@@ -17,30 +15,23 @@ interface LanguageContextValue {
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
-/** Idioma de la interfaz: español por defecto; la preferencia (dato no sensible) se guarda en localStorage. */
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLang] = useState<Language>(DEFAULT_LANGUAGE);
+/**
+ * Idioma de la interfaz. El servidor lo lee de la cookie y renderiza ya en ese
+ * idioma, así cliente y servidor coinciden al hidratar (sin parpadeos).
+ */
+export function LanguageProvider({ initialLanguage, children }: { initialLanguage: Language; children: ReactNode }) {
+  const [i18n] = useState(() => createI18n(initialLanguage));
+  const [language, setLang] = useState<Language>(initialLanguage);
 
-  const setLanguage = useCallback((lang: Language) => {
-    setLang(lang);
-    void i18n.changeLanguage(lang);
-    document.documentElement.lang = lang;
-    try {
-      localStorage.setItem(STORAGE_KEY, lang);
-    } catch {
-      /* almacenamiento no disponible */
-    }
-  }, []);
-
-  useEffect(() => {
-    let saved: string | null = null;
-    try {
-      saved = localStorage.getItem(STORAGE_KEY);
-    } catch {
-      /* almacenamiento no disponible */
-    }
-    if (isSupportedLanguage(saved) && saved !== DEFAULT_LANGUAGE) setLanguage(saved);
-  }, [setLanguage]);
+  const setLanguage = useCallback(
+    (lang: Language) => {
+      setLang(lang);
+      void i18n.changeLanguage(lang);
+      document.documentElement.lang = lang;
+      document.cookie = `${LANGUAGE_COOKIE}=${lang}; Path=/; Max-Age=31536000; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`;
+    },
+    [i18n],
+  );
 
   const value = useMemo(
     () => ({ language, languages: SUPPORTED_LANGUAGES, locale: language === 'es' ? 'es' : 'en-US', setLanguage }),

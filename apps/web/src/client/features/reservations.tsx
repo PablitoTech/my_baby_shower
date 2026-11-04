@@ -4,7 +4,6 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ReservationStatus, type GiftDto, type ReservationDto } from '@mbs/contracts';
-import { allowedReservationTransitions } from '@mbs/shared';
 import { api, errorKey } from '../api';
 import { useDateFormat } from '../language';
 import { useConfirm } from '../ui/confirm';
@@ -14,11 +13,6 @@ import { useTitle } from '../use-title';
 import { useLoad } from './use-load';
 
 const STATUSES = Object.values(ReservationStatus);
-const ACTIONS: Partial<Record<ReservationStatus, { key: string; css: string }>> = {
-  CONFIRMED: { key: 'reservations.confirm', css: 'btn-secondary' },
-  DELIVERED: { key: 'reservations.deliver', css: 'btn-primary' },
-  CANCELLED: { key: 'reservations.cancel', css: 'btn-danger' },
-};
 
 /* eslint-disable @next/next/no-img-element */
 export function ReservationsPage() {
@@ -54,7 +48,11 @@ export function ReservationsPage() {
     router.replace(`${pathname}${next.size ? `?${next}` : ''}`);
   }
 
-  async function change(r: ReservationDto, to: ReservationStatus) {
+  /**
+   * La reserva ya la confirmó el invitado: los padres la marcan como entregada
+   * o la cancelan (pidiendo confirmación, porque libera las unidades).
+   */
+  async function change(r: ReservationDto, to: 'DELIVERED' | 'CANCELLED') {
     if (to === 'CANCELLED') {
       const ok = await confirm('reservations.cancelConfirm', { params: { guest: r.guestName }, confirmKey: 'reservations.cancel', danger: true });
       if (!ok) return;
@@ -113,9 +111,8 @@ export function ReservationsPage() {
           <p className="count" role="status">{t('reservations.count', { count: reservations.length })}</p>
           <ul className="list">
             {reservations.map((r) => {
-              const actions = allowedReservationTransitions(r.status).map((to) => ({ to, ...ACTIONS[to]! }));
               return (
-                <li key={r.id} className={`reservation card ${r.status === 'CANCELLED' ? 'inactive' : ''}`}>
+                <li key={r.id} className={`reservation card ${r.status !== 'CONFIRMED' ? 'inactive' : ''}`}>
                   <div className="main">
                     <div className="head">
                       <h2>{r.guestName}</h2>
@@ -127,20 +124,20 @@ export function ReservationsPage() {
                     <details>
                       <summary>{t('reservations.history')} · {t('reservations.code')} {r.confirmationCode}</summary>
                       <ul className="timeline">
-                        <li>{t('reservations.createdAt', { date: fmt.medium(r.createdAt) })}</li>
-                        {r.confirmedAt && <li>{t('reservations.confirmedAt', { date: fmt.medium(r.confirmedAt) })}</li>}
+                        <li>{t('reservations.confirmedAt', { date: fmt.medium(r.confirmedAt) })}</li>
                         {r.deliveredAt && <li>{t('reservations.deliveredAt', { date: fmt.medium(r.deliveredAt) })}</li>}
                         {r.cancelledAt && <li>{t('reservations.cancelledAt', { date: fmt.medium(r.cancelledAt) })}</li>}
                       </ul>
                     </details>
                   </div>
-                  {actions.length > 0 && (
+                  {r.status === 'CONFIRMED' && (
                     <div className="actions">
-                      {actions.map((a) => (
-                        <button key={a.to} type="button" className={`btn btn-sm ${a.css}`} disabled={busyId === r.id} onClick={() => void change(r, a.to)}>
-                          {t(a.key)}
-                        </button>
-                      ))}
+                      <button type="button" className="btn btn-sm btn-primary" disabled={busyId === r.id} onClick={() => void change(r, 'DELIVERED')}>
+                        🎁 {t('reservations.deliver')}
+                      </button>
+                      <button type="button" className="btn btn-sm btn-danger" disabled={busyId === r.id} onClick={() => void change(r, 'CANCELLED')}>
+                        {t('reservations.cancel')}
+                      </button>
                     </div>
                   )}
                 </li>

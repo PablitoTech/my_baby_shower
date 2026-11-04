@@ -11,7 +11,8 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:integration": "vitest run --config vitest.integration.config.ts"
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "vercel-build": "node ../../scripts/vercel-migrate.mjs && npm run build"
   },
   "dependencies": {
     "@hookform/resolvers": "^7.0.2",

@@ -2,7 +2,7 @@
 import { render, screen } from '@testing-library/react';
 import { I18nextProvider } from 'react-i18next';
 import { ERROR_CODES } from '@mbs/common';
-import i18n from '@/i18n';
+import { createI18n } from '@/i18n';
 import en from '@/i18n/locales/en.json';
 import es from '@/i18n/locales/es.json';
 import { ApiClientError, errorKey } from './api';
@@ -34,7 +34,7 @@ describe('cliente', () => {
 
   it('GiftCard muestra nombre, estado traducido y progreso', () => {
     const { container } = render(
-      <I18nextProvider i18n={i18n}>
+      <I18nextProvider i18n={createI18n('es')}>
         <GiftCard name="Pañales" description={null} categoryCode="HYGIENE" imageUrl={null} status="PARTIALLY_RESERVED" available={1} required={4} />
       </I18nextProvider>,
     );
