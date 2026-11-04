@@ -7,12 +7,14 @@ const ISSUER = 'my_baby_shower';
 export interface AccessPayload {
   sub: string;
   role: UserRole;
+  /** Sesión a la que pertenece el token: si se revoca, el token deja de valer. */
+  sid: string;
 }
 
 const secret = () => new TextEncoder().encode(env().JWT_ACCESS_SECRET);
 
 export function signAccessToken(payload: AccessPayload): Promise<string> {
-  return new SignJWT({ role: payload.role })
+  return new SignJWT({ role: payload.role, sid: payload.sid })
     .setProtectedHeader({ alg: 'HS256' })
     .setSubject(payload.sub)
     .setIssuer(ISSUER)
@@ -24,8 +26,8 @@ export function signAccessToken(payload: AccessPayload): Promise<string> {
 export async function verifyAccessToken(token: string): Promise<AccessPayload | null> {
   try {
     const { payload } = await jwtVerify(token, secret(), { issuer: ISSUER, algorithms: ['HS256'] });
-    if (typeof payload.sub !== 'string') return null;
-    return { sub: payload.sub, role: payload['role'] as UserRole };
+    if (typeof payload.sub !== 'string' || typeof payload['sid'] !== 'string') return null;
+    return { sub: payload.sub, role: payload['role'] as UserRole, sid: payload['sid'] };
   } catch {
     return null;
   }

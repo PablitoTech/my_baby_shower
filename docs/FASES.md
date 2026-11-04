@@ -22,6 +22,7 @@ Este documento describe el plan de desarrollo incremental de **my_baby_shower**,
 | 11 | Pruebas unitarias y de integración | Completada |
 | 12 | Documentación y cierre del MVP | Completada |
 | 13 | Migración a Next.js full-stack y despliegue en Vercel | Completada |
+| 14 | Simplificación del flujo de reservas | Completada |
 
 Estados posibles: `Pendiente`, `En progreso`, `Completada`, `Bloqueada`.
 
@@ -417,6 +418,25 @@ Estados posibles: `Pendiente`, `En progreso`, `Completada`, `Bloqueada`.
 - Verificado en el navegador: registro, regalos con modal, publicación, reserva en inglés (el regalo agotado desaparece), reservas y ausencia de scroll horizontal a 375 px.
 - La versión Angular + NestJS queda en el primer commit (`c697b49`).
 - **Pendiente:** aplicar las migraciones en Aiven en cuanto se tenga la contraseña correcta, porque la proporcionada fue rechazada.
+
+---
+
+## Fase 14 — Simplificación del flujo de reservas
+
+**Objetivo:** que el invitado sea quien confirma la reserva y que en el panel los padres solo tengan una acción: marcar el regalo como entregado.
+
+### Cambios respecto a la especificación original
+
+- Estados de reserva: de `Pendiente / Confirmada / Cancelada / Entregada` a **`Confirmada → Entregada | Cancelada`**. Ya no existe "Pendiente": el invitado confirma al reservar.
+- En el panel se elimina la acción "Confirmar"; quedan **"Marcar como entregado"** (principal) y **"Cancelar reserva"** (secundaria, con confirmación, libera las unidades).
+- Migración `20261104210000_restore_reservation_cancel`: vuelve a agregar el estado `CANCELLED`, la columna `cancelled_at` y un `CHECK` (cancelada ⇒ fecha de cancelación).
+- Migración `20261104200000_simplify_reservation_status`: las reservas pendientes pasan a confirmadas, se eliminan las canceladas (ya no ocupaban unidades), se borra la columna `cancelled_at` y se agrega un `CHECK` (entregada ⇒ fecha de entrega).
+
+### Resultado
+
+- 18 pruebas unitarias y 19 de integración en verde (incluye que dos cancelaciones simultáneas liberan las unidades una sola vez).
+- Verificado en el navegador: una reserva confirmada muestra "Marcar como entregado" y "Cancelar reserva"; al cancelar pide confirmación, libera la unidad y la reserva queda sin acciones.
+- **Pendiente:** aplicar las dos migraciones en producción (`npm run prisma:deploy:prod`).
 
 ---
 

@@ -1,14 +1,14 @@
 import { ReservationStatus } from '@mbs/contracts';
 
 /**
- * Transiciones permitidas entre estados de reserva.
- * CANCELLED y DELIVERED son estados finales.
+ * Flujo de una reserva: el invitado la confirma al reservar (CONFIRMED) y los
+ * padres la marcan como entregada (DELIVERED) o la cancelan (CANCELLED).
+ * DELIVERED y CANCELLED son estados finales.
  */
 const TRANSITIONS: Record<ReservationStatus, readonly ReservationStatus[]> = {
-  [ReservationStatus.PENDING]: [ReservationStatus.CONFIRMED, ReservationStatus.CANCELLED, ReservationStatus.DELIVERED],
-  [ReservationStatus.CONFIRMED]: [ReservationStatus.CANCELLED, ReservationStatus.DELIVERED],
-  [ReservationStatus.CANCELLED]: [],
+  [ReservationStatus.CONFIRMED]: [ReservationStatus.DELIVERED, ReservationStatus.CANCELLED],
   [ReservationStatus.DELIVERED]: [],
+  [ReservationStatus.CANCELLED]: [],
 };
 
 export function canTransitionReservation(from: ReservationStatus, to: ReservationStatus): boolean {
@@ -19,13 +19,7 @@ export function allowedReservationTransitions(from: ReservationStatus): readonly
   return TRANSITIONS[from];
 }
 
-/** Estados que cuentan como unidades comprometidas del regalo. */
-export const ACTIVE_RESERVATION_STATUSES: readonly ReservationStatus[] = [
-  ReservationStatus.PENDING,
-  ReservationStatus.CONFIRMED,
-  ReservationStatus.DELIVERED,
-];
-
-export function isActiveReservation(status: ReservationStatus): boolean {
-  return ACTIVE_RESERVATION_STATUSES.includes(status);
+/** Las reservas confirmadas y entregadas ocupan unidades del regalo; las canceladas no. */
+export function holdsUnits(status: ReservationStatus): boolean {
+  return status !== ReservationStatus.CANCELLED;
 }

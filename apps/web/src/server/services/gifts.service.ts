@@ -90,10 +90,10 @@ export async function updateGift(userId: string, giftId: string, input: z.output
   return toGiftDto(gift);
 }
 
-/** Borrado lógico. No se permite con reservas pendientes o confirmadas. */
+/** Borrado lógico. No se permite con reservas confirmadas aún sin entregar. */
 export async function deleteGift(userId: string, giftId: string): Promise<void> {
   const gift = await findOwnGift(userId, giftId);
-  const active = await db().giftReservation.count({ where: { giftId: gift.id, status: { in: ['PENDING', 'CONFIRMED'] } } });
+  const active = await db().giftReservation.count({ where: { giftId: gift.id, status: 'CONFIRMED' } });
   if (active > 0) throw new ApiError(409, ERROR_CODES.GIFT_HAS_ACTIVE_RESERVATIONS);
   await db().gift.update({ where: { id: gift.id }, data: { recordStatus: 'INACTIVE', deletedAt: new Date() } });
 }
@@ -118,6 +118,11 @@ export async function removeGiftImage(userId: string, giftId: string): Promise<G
 export async function getImage(imageId: string) {
   return db().giftImage.findFirst({
     where: { id: imageId, gift: { recordStatus: 'ACTIVE' } },
-    select: { data: true, mimeType: true, sizeBytes: true },
+    select: {
+      data: true,
+      mimeType: true,
+      sizeBytes: true,
+      gift: { select: { babyShower: { select: { userId: true, isPublished: true, status: true } } } },
+    },
   });
 }

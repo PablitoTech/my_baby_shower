@@ -16,10 +16,11 @@ test('availableQuantity nunca es negativa', () => {
 });
 
 test('transiciones de reserva', () => {
-  assert.ok(canTransitionReservation('PENDING', 'CONFIRMED'));
   assert.ok(canTransitionReservation('CONFIRMED', 'DELIVERED'));
-  assert.ok(!canTransitionReservation('CANCELLED', 'DELIVERED'));
+  assert.ok(canTransitionReservation('CONFIRMED', 'CANCELLED'));
   assert.ok(!canTransitionReservation('DELIVERED', 'CANCELLED'));
+  assert.ok(!canTransitionReservation('CANCELLED', 'DELIVERED'));
+  assert.ok(!canTransitionReservation('CANCELLED', 'CONFIRMED'));
 });
 
 test('slugify', () => {

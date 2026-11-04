@@ -5,7 +5,9 @@ import { loginSchema } from '@/shared/schemas';
 import { sessionContext, withSession } from '../_shared';
 
 export const POST = route(async (req) => {
-  await rateLimit(`login:${clientIp(req)}`, 5, MINUTE);
+  await rateLimit('login', clientIp(req), 5, MINUTE);
   const input = await readBody(req, loginSchema);
+  // Límite por cuenta: frena ataques distribuidos desde muchas IPs contra el mismo usuario.
+  await rateLimit('login-account', input.identifier, 10, 15 * MINUTE);
   return withSession(await login(input, sessionContext(req)));
 });

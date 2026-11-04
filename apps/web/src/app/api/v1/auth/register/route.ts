@@ -5,7 +5,7 @@ import { registerSchema } from '@/shared/schemas';
 import { sessionContext, withSession } from '../_shared';
 
 export const POST = route(async (req) => {
-  await rateLimit(`register:${clientIp(req)}`, 5, MINUTE);
+  await rateLimit('register', clientIp(req), 5, MINUTE);
   const input = await readBody(req, registerSchema);
   return withSession(await register(input, sessionContext(req)), 201);
 });

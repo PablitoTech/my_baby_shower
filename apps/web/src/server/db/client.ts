@@ -42,6 +42,10 @@ export function createPrismaClient(url: string): PrismaClient {
         ? { ca, rejectUnauthorized: true }
         : { rejectUnauthorized: sslmode === 'verify-full' };
 
+  if (ssl && !ssl.rejectUnauthorized && process.env.NODE_ENV === 'production') {
+    console.warn('[db] TLS sin verificación de certificado: define DATABASE_CA_CERT con el CA del proveedor.');
+  }
+
   const adapter = new PrismaPg(
     {
       connectionString,

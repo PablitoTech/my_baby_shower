@@ -89,6 +89,9 @@ export async function reserveGift(
         guestEmail: input.guestEmail ?? null,
         quantity: input.quantity,
         message: input.message ?? null,
+        // El invitado confirma la reserva al enviarla.
+        status: 'CONFIRMED',
+        confirmedAt: new Date(),
       },
     });
     return { confirmationCode: reservation.confirmationCode, giftName: gift.name, quantity: reservation.quantity };

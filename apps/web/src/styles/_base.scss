@@ -249,7 +249,7 @@ img { max-width: 100%; display: block; }
 }
 
 .badge-available, .badge-confirmed { background: var(--c-mint); color: var(--c-mint-deep); }
-.badge-partially_reserved, .badge-pending { background: var(--c-beige); color: var(--c-beige-deep); }
+.badge-partially_reserved { background: var(--c-beige); color: var(--c-beige-deep); }
 .badge-reserved, .badge-delivered { background: var(--c-lavender); color: var(--c-lavender-deep); }
 .badge-cancelled { background: var(--c-pink); color: var(--c-pink-deep); }
 

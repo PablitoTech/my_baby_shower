@@ -4,7 +4,7 @@ import { resetPassword } from '@/server/services/auth.service';
 import { resetPasswordSchema } from '@/shared/schemas';
 
 export const POST = route(async (req) => {
-  await rateLimit(`reset:${clientIp(req)}`, 5, MINUTE);
+  await rateLimit('reset', clientIp(req), 5, MINUTE);
   await resetPassword(await readBody(req, resetPasswordSchema));
   return noContent();
 });

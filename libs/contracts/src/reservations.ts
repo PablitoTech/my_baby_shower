@@ -22,9 +22,9 @@ export interface ReservationDto {
   quantity: number;
   message: string | null;
   status: ReservationStatus;
-  confirmedAt: string | null;
-  cancelledAt: string | null;
+  confirmedAt: string;
   deliveredAt: string | null;
+  cancelledAt: string | null;
   createdAt: string;
   updatedAt: string;
 }

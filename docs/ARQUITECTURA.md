@@ -79,7 +79,7 @@ Todos los modelos usan UUID v7 como clave primaria, campos de auditoría (`creat
 
 **Estados**
 - `GiftStatus`: `AVAILABLE` → `PARTIALLY_RESERVED` → `RESERVED`, calculado con `computeGiftStatus()`.
-- `ReservationStatus`: `PENDING`, `CONFIRMED`, `CANCELLED`, `DELIVERED`.
+- `ReservationStatus`: `CONFIRMED` (el invitado confirma al reservar) → `DELIVERED` (los padres lo marcan como entregado) o `CANCELLED` (los padres la cancelan).
 - `RecordStatus`: `ACTIVE`/`INACTIVE`, que marca el borrado lógico o la desactivación.
 
 ## Reglas de negocio
@@ -87,30 +87,48 @@ Todos los modelos usan UUID v7 como clave primaria, campos de auditoría (`creat
 1. Registrarse crea, en una sola operación, el `User` y su `BabyShower`.
 2. Un regalo no se puede reservar por encima de su cantidad disponible (`requerida - reservada`).
 3. **Concurrencia:** la reserva corre en una transacción que bloquea la fila del regalo con `SELECT … FOR UPDATE`. Las reservas simultáneas se serializan; está probado con 6 peticiones en paralelo contra un stock de 3.
-4. Las reservas `PENDING`, `CONFIRMED` y `DELIVERED` comprometen unidades. Al pasar a `CANCELLED`, se liberan en la misma transacción.
-5. Transiciones permitidas: `PENDING → CONFIRMED | CANCELLED | DELIVERED` y `CONFIRMED → CANCELLED | DELIVERED`. `CANCELLED` y `DELIVERED` son estados finales.
+4. Las reservas confirmadas y entregadas ocupan unidades del regalo; cancelar una reserva confirmada las libera en la misma transacción.
+5. Transiciones permitidas: `CONFIRMED → DELIVERED` y `CONFIRMED → CANCELLED`. Ambos son estados finales.
 6. No se puede reducir la cantidad requerida por debajo de la ya reservada.
-7. No se puede eliminar un regalo con reservas `PENDING` o `CONFIRMED`. El borrado es lógico y conserva el historial.
+7. No se puede eliminar un regalo con reservas confirmadas aún sin entregar. El borrado es lógico y conserva el historial.
 8. Los invitados no necesitan registrarse, solo ven datos públicos (sin IDs internos ni correos) y no pueden modificar la lista. Los regalos agotados no se envían a la página pública.
 9. Cada usuario accede únicamente a sus propios regalos y reservas; los de otro usuario devuelven 404.
 10. Publicar genera `<nombre-del-bebé>-<10 caracteres aleatorios>`, con unos 50 bits de entropía. Volver a publicar conserva el mismo enlace; ocultar el Baby Shower lo desactiva.
 
 ## Seguridad
 
+Auditoría del 2026-11-04: cada medida está cubierta por pruebas automáticas (`apps/web/src/security.test.ts` y `apps/web/test/api.integration.test.ts`) y fue verificada con ataques reales contra la app.
+
 | Medida | Implementación |
 |---|---|
 | Hash de contraseñas | Argon2id (64 MiB, t=3) y verificación ficticia para igualar tiempos si el usuario no existe |
-| Sesiones | JWT de acceso de 15 min (`jose`, HS256, emisor verificado) y refresh opaco de 7 días, ambos en cookies `HttpOnly`, con `SameSite` (`Lax`/`Strict`) y `Secure` en producción. Nunca se usa `localStorage` para tokens |
-| Rotación de refresh | Cada uso revoca el token anterior con una actualización condicional; si se reutiliza uno revocado, se cierran todas las sesiones |
-| CSRF | Cookies `SameSite` y verificación de `Origin` en toda petición que modifica datos (403 si el origen es otro) |
-| Fuerza bruta | Rate limiting en PostgreSQL: 5/min en login y registro, 3/min en recuperación, 10/min en reservas públicas. Bloqueo de 15 min tras 5 fallos |
+| Sesiones | JWT de acceso de 15 min (`jose`, HS256, emisor verificado) ligado a una sesión (`sid`) que se comprueba en BD en cada petición. El logout, la rotación o un cambio de contraseña lo invalidan **al instante** |
+| Refresh token | Opaco, 7 días, guardado como hash; rotación con actualización condicional. Si se reutiliza uno ya rotado, se cierran todas las sesiones del usuario |
+| Cookies | `HttpOnly`; `SameSite=Lax` (acceso) y `Strict` (refresh, limitada a `/api/v1/auth`); `Secure` en producción. Nunca hay tokens en `localStorage` |
+| CSRF | Cookies `SameSite`; rechazo de `Sec-Fetch-Site: cross-site` y verificación de `Origin` en toda petición que modifica datos |
+| Fuerza bruta | Rate limiting en PostgreSQL **por IP y por cuenta**: login 5/min por IP y 10/15 min por cuenta; recuperación 3/min por IP y 3/h por correo; reservas 10/min por IP y 60/10 min por Baby Shower. Bloqueo de 15 min tras 5 fallos |
+| IP del cliente | Se prioriza `x-vercel-forwarded-for` (no falsificable en Vercel) y solo se aceptan IPs válidas. Las claves se guardan como hash de longitud fija |
+| Tamaño de peticiones | JSON: máx. 100 KB; imágenes: 2 MB + margen. El límite se aplica al leer el stream, aunque no haya `Content-Length` |
 | Validación | Esquemas zod estrictos (`strictObject`: rechazan campos desconocidos) y validación de parámetros de ruta (UUID y slugs) |
-| Sanitización | Recorte de espacios y eliminación de caracteres de control; React escapa todo el contenido renderizado |
+| Sanitización / XSS | Recorte de espacios y eliminación de caracteres de control; React escapa todo; sin `dangerouslySetInnerHTML` ni `eval` |
+| Content-Security-Policy | `default-src 'self'`; sin recursos de terceros; `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`, `frame-ancestors 'none'` |
+| Otras cabeceras | `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, HSTS y COOP; `x-powered-by` desactivado |
 | SQL Injection | Prisma, y consultas crudas solo con plantillas parametrizadas; el nombre de esquema se valida con una expresión regular |
-| Cabeceras | `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, HSTS y COOP; `x-powered-by` desactivado |
-| Errores | Wrapper común con formato `{ statusCode, code, message }`; nunca expone stack traces y en producción omite los detalles de validación |
-| Logs | No se registran contraseñas, tokens ni cuerpos de peticiones |
-| Imágenes | Máximo 2 MB, firma binaria verificada, `CHECK` en BD, servidas con `nosniff` y `Content-Security-Policy: default-src 'none'; sandbox` |
-| Conexión a BD | TLS (`sslmode=require`) y verificación de certificado con `DATABASE_CA_CERT` |
-| Redirecciones | `returnUrl` del login limitado a rutas internas |
+| Redirecciones | `returnUrl` resuelto con `URL` y aceptado solo si es del mismo origen (bloquea `//host` y `/\host`) |
+| Imágenes | Firma binaria verificada (JPG, PNG o WEBP), `CHECK` en BD y servidas con `nosniff`, `CSP sandbox` y `CORP same-origin`. Si el Baby Shower no está publicado, solo las ve su dueño |
+| Control de acceso | Cada consulta privada filtra por el dueño (`babyShower.userId`); los recursos ajenos responden 404 |
+| Errores y logs | Formato `{ statusCode, code, message }` sin stack traces; en producción no se dan detalles de validación; no se registran contraseñas, tokens ni cuerpos |
+| Conexión a BD | TLS (`sslmode=require`); con `DATABASE_CA_CERT` también se verifica el certificado, y en producción se avisa si falta |
+| Secretos | Perfiles `.env.*` fuera del repositorio; `JWT_ACCESS_SECRET` de al menos 32 caracteres y distinto por perfil |
 | Dependencias | Versiones estables fijadas; `npm audit` sin vulnerabilidades |
+
+### Riesgos conocidos y aceptados (MVP)
+
+| Riesgo | Motivo / mitigación |
+|---|---|
+| `script-src 'unsafe-inline'` en la CSP | Next lo necesita para hidratar sin nonces. Mitigado porque React escapa todo y no hay HTML dinámico. Mejora futura: nonces con `proxy.ts` |
+| Bloqueo de cuenta provocado por un tercero (5 intentos fallidos) | Es el precio de frenar la fuerza bruta. Dura 15 min |
+| Enumeración de correos en el registro (`AUTH_EMAIL_TAKEN`) | Decisión de usabilidad. La recuperación de contraseña sí responde igual exista o no el correo |
+| Sin verificación de correo al registrarse | Fuera del alcance del MVP (no hay proveedor de correo) |
+| Reservas falsas de invitados anónimos | Limitadas por IP y por Baby Shower; los padres pueden cancelarlas desde el panel |
+| Fuera de Vercel, las cabeceras de IP se pueden falsear si el proxy no las sobrescribe | El límite por cuenta sigue protegiendo. Hay que desplegar detrás de un proxy que fije `x-real-ip` |

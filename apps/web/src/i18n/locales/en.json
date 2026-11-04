@@ -189,14 +189,14 @@
     "AUTH_SESSION_EXPIRED": "Your session has expired. Please log in again.",
     "GIFT_NOT_FOUND": "The gift doesn't exist or was deleted.",
     "GIFT_QUANTITY_BELOW_RESERVED": "The quantity can't be lower than the units already reserved.",
-    "GIFT_HAS_ACTIVE_RESERVATIONS": "This gift has active reservations. Cancel them before deleting it.",
+    "GIFT_HAS_ACTIVE_RESERVATIONS": "This gift has reservations that have not been delivered yet. It cannot be deleted.",
     "CATEGORY_NOT_FOUND": "The selected category doesn't exist.",
     "INVALID_IMAGE": "The image must be JPG, PNG or WEBP and smaller than 2 MB.",
     "BABY_SHOWER_NOT_FOUND": "This Baby Shower doesn't exist or hasn't been published yet.",
     "BABY_SHOWER_NOT_PUBLISHED": "This Baby Shower hasn't been published yet.",
     "RESERVATION_NOT_FOUND": "The reservation doesn't exist.",
     "RESERVATION_EXCEEDS_AVAILABLE": "There are no longer enough units available for this gift.",
-    "RESERVATION_INVALID_TRANSITION": "The reservation can't be changed to that status."
+    "RESERVATION_INVALID_TRANSITION": "This reservation has already been delivered or cancelled and cannot be changed."
   },
   "categories": {
     "HYGIENE": "Hygiene",
@@ -216,10 +216,9 @@
     "RESERVED": "Reserved"
   },
   "reservationStatus": {
-    "PENDING": "Pending",
     "CONFIRMED": "Confirmed",
-    "CANCELLED": "Cancelled",
-    "DELIVERED": "Delivered"
+    "DELIVERED": "Delivered",
+    "CANCELLED": "Cancelled"
   },
   "dashboard": {
     "eyebrow": "Baby Shower for",
@@ -235,10 +234,8 @@
     "reserved": "Reserved",
     "units": "{{reserved}} of {{required}} units reserved",
     "reservationsTitle": "Reservations",
-    "pending": "Pending",
     "confirmed": "Confirmed",
     "delivered": "Delivered",
-    "cancelled": "Cancelled",
     "publicLinkTitle": "Public link",
     "notPublished": "Your Baby Shower isn't published yet. Publish it to generate the link and share it with your guests.",
     "published": "Your Baby Shower is published. Share this link with your guests:",
@@ -257,7 +254,8 @@
     "manageReservations": "View reservations",
     "manageReservationsText": "See who reserved each gift.",
     "editEvent": "Edit event",
-    "editEventText": "Update names, date and description."
+    "editEventText": "Update names, date and description.",
+    "cancelled": "Cancelled"
   },
   "event": {
     "title": "My event",
@@ -298,7 +296,7 @@
   },
   "reservations": {
     "title": "Reservations",
-    "subtitle": "Review and manage your guests' reservations.",
+    "subtitle": "See your guests' reservations, mark the gifts you've received or cancel the ones that don't apply.",
     "filterGift": "Gift",
     "filterStatus": "Status",
     "allGifts": "All gifts",
@@ -312,17 +310,15 @@
     "status": "Status",
     "date": "Date",
     "code": "Code",
-    "confirm": "Confirm",
-    "cancel": "Cancel reservation",
     "deliver": "Mark as delivered",
-    "cancelConfirm": "Cancel {{guest}}'s reservation? The units will become available again.",
     "updated": "Reservation updated.",
     "history": "History",
-    "createdAt": "Reserved on {{date}}",
-    "confirmedAt": "Confirmed on {{date}}",
-    "cancelledAt": "Cancelled on {{date}}",
+    "confirmedAt": "Confirmed by the guest on {{date}}",
     "deliveredAt": "Delivered on {{date}}",
-    "count": "{{count}} reservations"
+    "count": "{{count}} reservations",
+    "cancel": "Cancel reservation",
+    "cancelConfirm": "Cancel {{guest}}'s reservation? The units will become available to other guests again.",
+    "cancelledAt": "Cancelled on {{date}}"
   },
   "public": {
     "eyebrow": "You're invited to the Baby Shower for",

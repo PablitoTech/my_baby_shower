@@ -29,7 +29,7 @@ const toAuthUser = (u: User): AuthUser => ({ id: u.id, email: u.email, username:
 
 async function issueTokens(user: User, ctx: SessionContext): Promise<IssuedTokens> {
   const refreshToken = randomToken(48);
-  await db().session.create({
+  const session = await db().session.create({
     data: {
       userId: user.id,
       tokenHash: sha256(refreshToken),
@@ -38,7 +38,7 @@ async function issueTokens(user: User, ctx: SessionContext): Promise<IssuedToken
       ipAddress: ctx.ipAddress?.slice(0, 45),
     },
   });
-  const accessToken = await signAccessToken({ sub: user.id, role: user.role });
+  const accessToken = await signAccessToken({ sub: user.id, role: user.role, sid: session.id });
   return { user: toAuthUser(user), accessToken, refreshToken };
 }
 

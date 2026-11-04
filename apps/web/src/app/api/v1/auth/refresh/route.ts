@@ -5,7 +5,7 @@ import { refresh } from '@/server/services/auth.service';
 import { sessionContext, withSession } from '../_shared';
 
 export const POST = route(async (req) => {
-  await rateLimit(`refresh:${clientIp(req)}`, 30, MINUTE);
+  await rateLimit('refresh', clientIp(req), 30, MINUTE);
   try {
     return withSession(await refresh(req.cookies.get(REFRESH_COOKIE)?.value, sessionContext(req)));
   } catch (error) {

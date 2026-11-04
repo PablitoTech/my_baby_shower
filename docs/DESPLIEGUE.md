@@ -12,12 +12,28 @@ DATABASE_URL="postgresql://avnadmin:CONTRASENA@HOST.aivencloud.com:PUERTO/financ
 
 > ⚠️ No uses el esquema de otro proyecto (por ejemplo `finance_mgmt_dev`): `prisma migrate deploy` crearía sus tablas y su tabla `_prisma_migrations` dentro de ese esquema.
 
-Aplica las migraciones y el seed **desde tu equipo** con el perfil de producción (`.env.production`):
+### Migraciones
+
+**Automáticas en Vercel (recomendado).** `apps/web/vercel.json` usa `npm run vercel-build`, que ejecuta `scripts/vercel-migrate.mjs` antes de compilar:
+
+| Entorno de Vercel | ¿Migra? |
+|---|---|
+| Production (rama principal) | Sí: `prisma migrate deploy` + seed idempotente |
+| Preview (otras ramas y PRs) | No, para que una rama nunca toque la base de producción |
+
+- `migrate deploy` solo aplica las migraciones pendientes de `prisma/migrations`; nunca borra ni resetea la base.
+- Si una migración falla, el build falla y Vercel mantiene el despliegue anterior en línea.
+- Para que una Preview migre su propia base, define en ese entorno un `DATABASE_URL` distinto y `RUN_MIGRATIONS=true`.
+
+**Manual (alternativa)**, desde tu equipo con `.env.production`:
 
 ```bash
+npm run prisma:status:prod    # ver pendientes
 npm run prisma:deploy:prod
 npm run prisma:seed:prod
 ```
+
+> 💡 Durante unos segundos, la versión anterior sigue atendiendo mientras se construye la nueva sobre la base ya migrada. Prefiere migraciones compatibles hacia atrás (agregar columnas o valores antes de quitarlos) cuando haya usuarios reales.
 
 ### Certificado SSL (recomendado)
 
@@ -30,12 +46,12 @@ Aiven firma sus certificados con su propia CA. Sin el CA, la conexión **se cifr
 ## 2. Proyecto en Vercel
 
 1. **Add New → Project** e importa el repositorio.
-2. **Root Directory:** `apps/web`. Vercel detecta Next.js y aplica `apps/web/vercel.json`, que instala desde la raíz del monorepo y ejecuta `prisma generate` y `next build`.
+2. **Root Directory:** `apps/web`. Vercel detecta Next.js y aplica `apps/web/vercel.json`: instala desde la raíz del monorepo, aplica las migraciones (solo en Production), ejecuta `prisma generate` y `next build`.
 3. **Environment Variables:**
 
 | Variable | Valor |
 |---|---|
-| `DATABASE_URL` | Cadena de conexión con `sslmode=require&schema=...` |
+| `DATABASE_URL` | Cadena de conexión con `sslmode=require&schema=...`. Márcala **solo para Production** (o usa otra base en Preview) |
 | `JWT_ACCESS_SECRET` | Secreto aleatorio de al menos 32 caracteres (`openssl rand -base64 48`) |
 | `APP_URL` | `https://tu-proyecto.vercel.app` o tu dominio |
 | `DATABASE_CA_CERT` | *(opcional)* CA en PEM con `\n` |
@@ -43,7 +59,11 @@ Aiven firma sus certificados con su propia CA. Sin el CA, la conexión **se cifr
 
 4. **Deploy.**
 
+> Si en Aiven restringiste las IPs permitidas (*Allowed IP addresses*), el build y las funciones de Vercel necesitan acceso: Vercel no tiene IPs fijas en los planes estándar, así que deja `0.0.0.0/0` (la conexión va cifrada y con contraseña) o usa el *Secure Compute* de Vercel.
+
 ## 3. Verificación
+
+- En el log del build debe aparecer `[migrate] Base de datos lista.`
 
 - `https://tu-dominio/api/v1/health` debe responder `{"status":"ok","database":"up"}`.
 - Registra una cuenta, agrega un regalo, publica y abre el enlace público en otra ventana.

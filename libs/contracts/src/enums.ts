@@ -6,12 +6,16 @@ export const GiftStatus = {
 } as const;
 export type GiftStatus = (typeof GiftStatus)[keyof typeof GiftStatus];
 
-/** Estados de una reserva. */
+/**
+ * Estados de una reserva:
+ * - CONFIRMED: el invitado la confirmó desde la página pública.
+ * - DELIVERED: los padres marcaron el regalo como entregado.
+ * - CANCELLED: los padres la cancelaron (las unidades vuelven a estar disponibles).
+ */
 export const ReservationStatus = {
-  PENDING: 'PENDING',
   CONFIRMED: 'CONFIRMED',
-  CANCELLED: 'CANCELLED',
   DELIVERED: 'DELIVERED',
+  CANCELLED: 'CANCELLED',
 } as const;
 export type ReservationStatus = (typeof ReservationStatus)[keyof typeof ReservationStatus];
 

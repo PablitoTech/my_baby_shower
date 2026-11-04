@@ -106,7 +106,6 @@ export function DashboardPage() {
           <p className="muted">{t('dashboard.units', { reserved: s.gifts.unitsReserved, required: s.gifts.unitsRequired })}</p>
           <h3>{t('dashboard.reservationsTitle')}</h3>
           <ul className="res-list">
-            <li><span className="badge badge-pending">{t('dashboard.pending')}</span> {s.reservations.pending}</li>
             <li><span className="badge badge-confirmed">{t('dashboard.confirmed')}</span> {s.reservations.confirmed}</li>
             <li><span className="badge badge-delivered">{t('dashboard.delivered')}</span> {s.reservations.delivered}</li>
             <li><span className="badge badge-cancelled">{t('dashboard.cancelled')}</span> {s.reservations.cancelled}</li>

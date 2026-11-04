@@ -77,7 +77,7 @@ export async function getDashboard(userId: string): Promise<DashboardSummary> {
   const giftCount = (s: string) => giftGroups.find((g) => g.status === s)?._count._all ?? 0;
   const resCount = (s: string) => reservationGroups.find((g) => g.status === s)?._count._all ?? 0;
   const [available, partiallyReserved, reserved] = [giftCount('AVAILABLE'), giftCount('PARTIALLY_RESERVED'), giftCount('RESERVED')];
-  const [pending, confirmed, cancelled, delivered] = [resCount('PENDING'), resCount('CONFIRMED'), resCount('CANCELLED'), resCount('DELIVERED')];
+  const [confirmed, delivered, cancelled] = [resCount('CONFIRMED'), resCount('DELIVERED'), resCount('CANCELLED')];
   return {
     babyShower: toBabyShowerDto(babyShower),
     gifts: {
@@ -88,6 +88,6 @@ export async function getDashboard(userId: string): Promise<DashboardSummary> {
       unitsRequired: giftUnits._sum.quantityRequired ?? 0,
       unitsReserved: giftUnits._sum.quantityReserved ?? 0,
     },
-    reservations: { total: pending + confirmed + cancelled + delivered, pending, confirmed, cancelled, delivered },
+    reservations: { total: confirmed + delivered + cancelled, confirmed, delivered, cancelled },
   };
 }

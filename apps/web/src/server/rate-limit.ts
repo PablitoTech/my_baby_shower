@@ -1,4 +1,5 @@
 import { ERROR_CODES } from '@mbs/common';
+import { sha256 } from './crypto';
 import { db } from './db/prisma';
 import { env } from './env';
 import { ApiError } from './http/errors';
@@ -8,8 +9,10 @@ import { ApiError } from './http/errors';
  * instancias serverless porque el contador no vive en memoria. La operación
  * es atómica (INSERT ... ON CONFLICT DO UPDATE).
  */
-export async function rateLimit(key: string, limit: number, windowMs: number): Promise<void> {
+export async function rateLimit(scope: string, subject: string, limit: number, windowMs: number): Promise<void> {
   if (env().RATE_LIMIT_DISABLED === 'true') return;
+  // El sujeto (IP, correo…) se guarda como hash: longitud fija y sin datos personales en claro.
+  const key = `${scope}:${sha256(subject.toLowerCase()).slice(0, 40)}`;
   const now = new Date();
   const resetAt = new Date(now.getTime() + windowMs);
   const [row] = await db().$queryRaw<{ count: number }[]>`

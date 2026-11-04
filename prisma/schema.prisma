@@ -31,11 +31,12 @@ enum GiftStatus {
   RESERVED
 }
 
+/// CONFIRMED: el invitado confirmó la reserva. DELIVERED: los padres marcaron el regalo
+/// como entregado. CANCELLED: los padres la cancelaron (libera las unidades).
 enum ReservationStatus {
-  PENDING
   CONFIRMED
-  CANCELLED
   DELIVERED
+  CANCELLED
 }
 
 // ---------------------------------------------------------------------------
@@ -154,7 +155,7 @@ model Gift {
   name             String       @db.VarChar(120)
   description      String?      @db.VarChar(500)
   quantityRequired Int          @map("quantity_required")
-  /// Unidades comprometidas por reservas activas (pendientes, confirmadas o entregadas).
+  /// Unidades comprometidas por las reservas confirmadas o entregadas (las canceladas no cuentan).
   quantityReserved Int          @default(0) @map("quantity_reserved")
   status           GiftStatus   @default(AVAILABLE)
   recordStatus     RecordStatus @default(ACTIVE) @map("record_status")
@@ -186,8 +187,8 @@ model GiftReservation {
   guestEmail       String?           @map("guest_email") @db.VarChar(254)
   quantity         Int
   message          String?           @db.VarChar(500)
-  status           ReservationStatus @default(PENDING)
-  confirmedAt      DateTime?         @map("confirmed_at") @db.Timestamptz(3)
+  status           ReservationStatus @default(CONFIRMED)
+  confirmedAt      DateTime          @default(now()) @map("confirmed_at") @db.Timestamptz(3)
   cancelledAt      DateTime?         @map("cancelled_at") @db.Timestamptz(3)
   deliveredAt      DateTime?         @map("delivered_at") @db.Timestamptz(3)
   createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)

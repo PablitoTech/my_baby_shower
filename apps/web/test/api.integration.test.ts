@@ -77,6 +77,13 @@ describe('API my_baby_shower (integración con PostgreSQL)', () => {
     it('rechaza peticiones que modifican datos desde otro origen', async () => {
       const res = await new TestClient().call(login.POST, { method: 'POST', body: {}, headers: { origin: 'https://evil.example' } });
       expect(res).toMatchObject({ status: 403, body: { code: 'FORBIDDEN' } });
+      const fetchSite = await new TestClient().call(login.POST, { method: 'POST', body: {}, headers: { 'sec-fetch-site': 'cross-site' } });
+      expect(fetchSite.status).toBe(403);
+    });
+
+    it('rechaza cuerpos JSON de más de 100 KB', async () => {
+      const res = await new TestClient().call(login.POST, { method: 'POST', body: { identifier: 'x'.repeat(200_000), password: 'x' } });
+      expect(res.status).toBe(413);
     });
 
     it('protege las rutas privadas', async () => {
@@ -113,8 +120,13 @@ describe('API my_baby_shower (integración con PostgreSQL)', () => {
 
       const d = new TestClient();
       await d.call(login.POST, { method: 'POST', body: { identifier: 'usera', password: PASSWORD } });
+      const stolenAccess = d.cookie('mbs_at')!;
       expect((await d.call(logout.POST, { method: 'POST' })).status).toBe(204);
       expect((await d.call(me.GET)).status).toBe(401);
+      // Un token de acceso robado deja de valer en cuanto se cierra la sesión (no espera a expirar).
+      const thief = new TestClient();
+      thief.setCookie('mbs_at', stolenAccess);
+      expect((await thief.call(me.GET)).status).toBe(401);
     });
 
     it('recupera la contraseña con un token de un solo uso', async () => {
@@ -130,9 +142,16 @@ describe('API my_baby_shower (integración con PostgreSQL)', () => {
   });
 
   describe('regalos, publicación y reservas', () => {
+    // La prueba de reutilización del refresh token revocó todas las sesiones de usera:
+    // el token de acceso anterior ya no vale (comportamiento esperado), se inicia sesión de nuevo.
+    beforeAll(async () => {
+      expect((await parent.call(login.POST, { method: 'POST', body: { identifier: 'usera', password: PASSWORD } })).status).toBe(200);
+    });
+
     let giftId: string;
     let slug: string;
     let publicGiftId: string;
+    let publishedImageId: string;
 
     it('crea un regalo sanitizando y validando cantidades', async () => {
       const res = await parent.call(gifts.POST, { method: 'POST', body: { name: '  Pañales  ', description: 'Etapa 3', categoryId, quantityRequired: 3 } });
@@ -148,9 +167,13 @@ describe('API my_baby_shower (integración con PostgreSQL)', () => {
       const res = await parent.call(giftImage.POST, { method: 'POST', params: { id: giftId }, form });
       expect(res.body.imageUrl).toMatch(/^\/api\/v1\/images\/[0-9a-f-]{36}$/);
       const imageId = res.body.imageUrl.split('/').pop();
-      const served = await new TestClient().call(images.GET, { params: { id: imageId } });
+      // Baby Shower aún no publicado: la imagen es privada (solo la ve su dueño).
+      expect((await new TestClient().call(images.GET, { params: { id: imageId } })).status).toBe(404);
+      const served = await parent.call(images.GET, { params: { id: imageId } });
       expect(served.status).toBe(200);
       expect(served.headers.get('content-type')).toBe('image/png');
+      expect(served.headers.get('cache-control')).toContain('private');
+      publishedImageId = imageId;
 
       const fake = new FormData();
       fake.append('image', new File(['<script>alert(1)</script>'], 'x.png', { type: 'image/png' }));
@@ -165,6 +188,10 @@ describe('API my_baby_shower (integración con PostgreSQL)', () => {
       expect(JSON.stringify(pub.body)).not.toContain(giftId);
       expect(pub.body).not.toHaveProperty('id');
       publicGiftId = pub.body.gifts[0].publicId;
+      // Publicado: la imagen ya es visible para los invitados.
+      const img = await new TestClient().call(images.GET, { params: { id: publishedImageId } });
+      expect(img.status).toBe(200);
+      expect(img.headers.get('cache-control')).toContain('public');
     });
 
     it('serializa reservas concurrentes sin superar la cantidad disponible', async () => {
@@ -193,20 +220,42 @@ describe('API my_baby_shower (integración con PostgreSQL)', () => {
       expect(res).toMatchObject({ status: 409, body: { code: 'GIFT_QUANTITY_BELOW_RESERVED' } });
     });
 
-    it('permite cancelar y marcar como entregado respetando las transiciones', async () => {
+    it('las reservas del invitado quedan confirmadas; los padres las entregan o cancelan', async () => {
       const list = await parent.call(reservations.GET, { url: `/api/v1/reservations?giftId=${giftId}` });
       expect(list.body).toHaveLength(3);
+      expect(list.body.every((r: { status: string; confirmedAt: string }) => r.status === 'CONFIRMED' && r.confirmedAt)).toBe(true);
       const [first, second] = list.body;
 
-      await parent.call(reservationStatus.PATCH, { method: 'PATCH', params: { id: first.id }, body: { status: 'CANCELLED' } });
+      // Cancelar libera las unidades.
+      const cancelled = await parent.call(reservationStatus.PATCH, { method: 'PATCH', params: { id: first.id }, body: { status: 'CANCELLED' } });
+      expect(cancelled.body).toMatchObject({ status: 'CANCELLED' });
+      expect(cancelled.body.cancelledAt).toBeTruthy();
       expect(await db().gift.findUniqueOrThrow({ where: { id: giftId } })).toMatchObject({ quantityReserved: 2, status: 'PARTIALLY_RESERVED' });
 
-      const invalid = await parent.call(reservationStatus.PATCH, { method: 'PATCH', params: { id: first.id }, body: { status: 'DELIVERED' } });
-      expect(invalid.body.code).toBe('RESERVATION_INVALID_TRANSITION');
+      // Entregar no libera unidades.
+      const delivered = await parent.call(reservationStatus.PATCH, { method: 'PATCH', params: { id: second.id }, body: { status: 'DELIVERED' } });
+      expect(delivered.body).toMatchObject({ status: 'DELIVERED' });
+      expect(await db().gift.findUniqueOrThrow({ where: { id: giftId } })).toMatchObject({ quantityReserved: 2 });
 
-      await parent.call(reservationStatus.PATCH, { method: 'PATCH', params: { id: second.id }, body: { status: 'DELIVERED' } });
-      const delivered = await parent.call(reservations.GET, { url: '/api/v1/reservations?status=DELIVERED' });
-      expect(delivered.body).toHaveLength(1);
+      // Estados finales: no se pueden volver a cambiar.
+      for (const [id, status] of [[first.id, 'DELIVERED'], [first.id, 'CANCELLED'], [second.id, 'CANCELLED'], [second.id, 'CONFIRMED']]) {
+        const res = await parent.call(reservationStatus.PATCH, { method: 'PATCH', params: { id }, body: { status } });
+        expect(res.body.code).toBe('RESERVATION_INVALID_TRANSITION');
+      }
+      expect((await parent.call(reservationStatus.PATCH, { method: 'PATCH', params: { id: first.id }, body: { status: 'PENDING' } })).status).toBe(400);
+
+      expect((await parent.call(reservations.GET, { url: '/api/v1/reservations?status=DELIVERED' })).body).toHaveLength(1);
+      expect((await parent.call(reservations.GET, { url: '/api/v1/reservations?status=CANCELLED' })).body).toHaveLength(1);
+    });
+
+    it('cancelar dos veces a la vez solo libera las unidades una vez', async () => {
+      const list = await parent.call(reservations.GET, { url: `/api/v1/reservations?giftId=${giftId}&status=CONFIRMED` });
+      const [target] = list.body;
+      const results = await Promise.all(
+        [1, 2].map(() => parent.call(reservationStatus.PATCH, { method: 'PATCH', params: { id: target.id }, body: { status: 'CANCELLED' } })),
+      );
+      expect(results.map((r) => r.status).sort()).toEqual([200, 409]);
+      expect(await db().gift.findUniqueOrThrow({ where: { id: giftId } })).toMatchObject({ quantityReserved: 1 });
     });
 
     it('impide acceder a regalos o reservas de otro usuario', async () => {
@@ -217,6 +266,9 @@ describe('API my_baby_shower (integración con PostgreSQL)', () => {
     });
 
     it('bloquea el borrado con reservas activas y oculta la página al despublicar', async () => {
+      // Una reserva nueva (confirmada, sin entregar) impide borrar el regalo.
+      const fresh = await new TestClient().call(reserve.POST, { method: 'POST', params: { slug, giftId: publicGiftId }, body: { guestName: 'Invitada nueva', quantity: 1 } });
+      expect(fresh.status).toBe(201);
       expect((await parent.call(gift.DELETE, { method: 'DELETE', params: { id: giftId } })).body.code).toBe('GIFT_HAS_ACTIVE_RESERVATIONS');
       await parent.call(unpublish.POST, { method: 'POST' });
       expect((await new TestClient().call(publicShower.GET, { params: { slug } })).status).toBe(404);
@@ -225,7 +277,7 @@ describe('API my_baby_shower (integración con PostgreSQL)', () => {
     it('resume los datos en el dashboard', async () => {
       const res = await parent.call(dashboard.GET);
       expect(res.body.gifts).toMatchObject({ total: 1, partiallyReserved: 1, unitsRequired: 3, unitsReserved: 2 });
-      expect(res.body.reservations).toMatchObject({ total: 3, cancelled: 1, delivered: 1, pending: 1 });
+      expect(res.body.reservations).toEqual({ total: 4, confirmed: 1, delivered: 1, cancelled: 2 });
     });
   });
 });

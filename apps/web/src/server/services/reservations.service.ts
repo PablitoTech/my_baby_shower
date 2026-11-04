@@ -1,6 +1,6 @@
 import { ERROR_CODES } from '@mbs/common';
 import type { ReservationDto } from '@mbs/contracts';
-import { canTransitionReservation, computeGiftStatus, isActiveReservation } from '@mbs/shared';
+import { canTransitionReservation, computeGiftStatus, holdsUnits } from '@mbs/shared';
 import type { z } from 'zod';
 import type { reservationFiltersSchema, updateReservationStatusSchema } from '../../shared/schemas';
 import { db } from '../db/prisma';
@@ -17,7 +17,12 @@ export async function listReservations(userId: string, filters: z.output<typeof 
   return reservations.map(toReservationDto);
 }
 
-/** Cambia el estado. Al cancelar una reserva activa se liberan sus unidades en la misma transacción. */
+/**
+ * Cambia el estado de una reserva confirmada: entregada o cancelada.
+ * Al cancelar se liberan sus unidades en el regalo. Todo ocurre en una
+ * transacción con la fila del regalo bloqueada, para que una reserva
+ * concurrente no desajuste las cantidades.
+ */
 export async function updateReservationStatus(
   userId: string,
   reservationId: string,
@@ -32,26 +37,27 @@ export async function updateReservationStatus(
 
     const [gift] = await tx.$queryRaw<{ quantity_required: number; quantity_reserved: number }[]>`
       SELECT quantity_required, quantity_reserved FROM gifts WHERE id = ${reservation.giftId}::uuid FOR UPDATE`;
+    // Se vuelve a leer con el regalo bloqueado: el estado no puede cambiar a medio camino.
     const current = await tx.giftReservation.findUniqueOrThrow({ where: { id: reservation.id } });
     if (!gift || !canTransitionReservation(current.status, input.status)) {
       throw new ApiError(409, ERROR_CODES.RESERVATION_INVALID_TRANSITION);
     }
 
-    const now = new Date();
-    if (isActiveReservation(current.status) && !isActiveReservation(input.status)) {
+    if (holdsUnits(current.status) && !holdsUnits(input.status)) {
       const reserved = Math.max(0, gift.quantity_reserved - current.quantity);
       await tx.gift.update({
         where: { id: reservation.giftId },
         data: { quantityReserved: reserved, status: computeGiftStatus(gift.quantity_required, reserved) },
       });
     }
+
+    const now = new Date();
     const updated = await tx.giftReservation.update({
       where: { id: reservation.id },
       data: {
         status: input.status,
-        confirmedAt: input.status === 'CONFIRMED' ? now : undefined,
-        cancelledAt: input.status === 'CANCELLED' ? now : undefined,
         deliveredAt: input.status === 'DELIVERED' ? now : undefined,
+        cancelledAt: input.status === 'CANCELLED' ? now : undefined,
       },
       include: { gift: { select: { id: true, name: true } } },
     });

@@ -34,10 +34,9 @@ export interface DashboardSummary {
   };
   reservations: {
     total: number;
-    pending: number;
     confirmed: number;
-    cancelled: number;
     delivered: number;
+    cancelled: number;
   };
 }
 
