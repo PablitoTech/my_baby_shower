@@ -7,7 +7,7 @@ Plataforma web para organizar y gestionar Baby Showers. Los futuros padres crean
 ## Características
 
 - Landing page con diseño pastel, neutro y responsive.
-- Registro de padres y bebé, inicio y cierre de sesión, y recuperación de contraseña.
+- Registro de padres y bebé, e inicio y cierre de sesión.
 - Dashboard con resumen de regalos y reservas, cuenta regresiva y enlace público.
 - Gestión de regalos por categoría, con cantidades, estados e imagen opcional (guardada en PostgreSQL).
 - Publicación del Baby Shower con un enlace no predecible y botón de copiar.
@@ -133,7 +133,6 @@ DATABASE_URL="postgresql://USUARIO:CONTRASENA@HOST:PUERTO/BASE_DE_DATOS?sslmode=
 | POST | `/auth/register` · `/auth/login` | Público | Registro (crea el Baby Shower) e inicio de sesión |
 | POST | `/auth/refresh` · `/auth/logout` | Cookie | Rotar o cerrar la sesión |
 | GET | `/auth/me` | Privado | Usuario actual |
-| POST | `/auth/forgot-password` · `/auth/reset-password` | Público | Recuperación de contraseña |
 | GET / PATCH | `/baby-shower` | Privado | Consultar o editar el evento |
 | GET | `/baby-shower/dashboard` | Privado | Resumen |
 | POST | `/baby-shower/publish` · `/unpublish` | Privado | Publicar u ocultar |
@@ -158,9 +157,9 @@ Resumen (detalle en [`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md)):
 3. Aplica las migraciones a la base remota con `npm run prisma:deploy` y luego `npm run prisma:seed`.
 4. Despliega.
 
-## Recuperación de contraseña en desarrollo
+## Recuperación de contraseña
 
-El MVP no tiene proveedor de correo. Con `NODE_ENV=development`, el enlace de recuperación aparece en la consola del servidor. En producción no se registra; para enviarlo, integra un proveedor en `apps/web/src/server/mail.ts`.
+No está disponible: requiere un proveedor de correo (Resend o SMTP) y por ahora no hay ninguno. La implementación completa (enlace de un solo uso, correo con la marca, envío por Resend o SMTP) está en el historial de git y puede restaurarse cuando haya un proveedor.
 
 ## Licencia
 

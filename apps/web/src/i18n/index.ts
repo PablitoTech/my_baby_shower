@@ -1,15 +1,10 @@
 import { createInstance, type i18n as I18n } from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import { DEFAULT_LANGUAGE, isSupportedLanguage, type Language } from '@mbs/common';
+import { DEFAULT_LANGUAGE, type Language } from '@mbs/common';
 import en from './locales/en.json';
 import es from './locales/es.json';
 
-/** Cookie con la preferencia de idioma (dato no sensible). La lee el servidor para renderizar en el idioma correcto. */
-export const LANGUAGE_COOKIE = 'mbs_lang';
-
-export function resolveLanguage(value: string | undefined | null): Language {
-  return isSupportedLanguage(value) ? value : DEFAULT_LANGUAGE;
-}
+export { LANGUAGE_COOKIE, resolveLanguage } from './language';
 
 /**
  * Crea una instancia de i18next. Se crea una por render en el servidor (las

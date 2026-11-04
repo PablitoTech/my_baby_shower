@@ -188,7 +188,7 @@ function ReservationFormView({
   const { register, handleSubmit, formState } = useForm<ReservationForm, unknown, z.output<typeof schema>>({
     resolver: zodResolver(schema),
     mode: 'onTouched',
-    defaultValues: { guestName: '', guestEmail: '', quantity: 1, message: '' },
+    defaultValues: { guestName: '', quantity: 1, message: '' },
   });
   const e = formState.errors;
 
@@ -214,9 +214,6 @@ function ReservationFormView({
         {error && <div className="alert alert-error" role="alert">{t(error)}</div>}
         <Field id="guestName" label={t('public.guestName')} error={e.guestName}>
           <input {...a11y('guestName', e.guestName)} autoComplete="name" maxLength={V.GUEST_NAME_MAX} {...register('guestName')} />
-        </Field>
-        <Field id="guestEmail" optional label={t('public.guestEmail')} error={e.guestEmail}>
-          <input {...a11y('guestEmail', e.guestEmail)} type="email" autoComplete="email" {...register('guestEmail')} />
         </Field>
         <Field id="quantity" label={t('public.quantity')} error={e.quantity}>
           <input {...a11y('quantity', e.quantity)} type="number" inputMode="numeric" min={1} max={gift.quantityAvailable} {...register('quantity', { valueAsNumber: true })} />

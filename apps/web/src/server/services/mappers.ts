@@ -46,7 +46,6 @@ export function toReservationDto(r: GiftReservation & { gift: Pick<Gift, 'id' | 
     confirmationCode: r.confirmationCode,
     gift: { id: r.gift.id, name: r.gift.name },
     guestName: r.guestName,
-    guestEmail: r.guestEmail,
     quantity: r.quantity,
     message: r.message,
     status: r.status,

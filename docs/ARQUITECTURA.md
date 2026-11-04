@@ -26,7 +26,7 @@ my_baby_shower/
 │   └── web/                       Next.js full-stack (Vercel)
 │       └── src/
 │           ├── app/
-│           │   ├── (public)/          landing, login, registro, recuperación, página pública
+│           │   ├── (public)/          landing, login, registro, página pública
 │           │   ├── (app)/             dashboard, regalos, reservas, evento (requieren sesión)
 │           │   └── api/v1/            route handlers de la API
 │           ├── server/                solo servidor
@@ -59,15 +59,13 @@ my_baby_shower/
 ```text
 User 1 ── 1 BabyShower 1 ── * Gift * ── 1 Category
   │                              ├── 0..1 GiftImage
-  ├── * Session                  └── * GiftReservation
-  └── * PasswordResetToken
+  └── * Session                  └── * GiftReservation
 ```
 
 | Modelo | Propósito | Puntos clave |
 |---|---|---|
 | `User` | Cuenta de los padres | `email` y `username` únicos en minúsculas (`CHECK`), `passwordHash` Argon2id, bloqueo por intentos fallidos |
 | `Session` | Refresh token rotativo | Solo se guarda el hash SHA-256, con expiración y revocación |
-| `PasswordResetToken` | Recuperación de contraseña | Hash SHA-256, un solo uso, expira a los 30 minutos |
 | `BabyShower` | Evento | Uno por usuario; `publicSlug` único y no predecible; `CHECK` publicado ⇒ slug |
 | `GiftImage` | Imagen de un regalo | `BYTEA` de 2 MB como máximo (`CHECK`) y tipo JPG, PNG o WEBP (`CHECK`); compatible con el disco efímero de serverless |
 | `RateLimit` | Rate limiting | Contador por clave con ventana fija, compartido entre instancias |
@@ -102,11 +100,11 @@ Auditoría del 2026-11-04: cada medida está cubierta por pruebas automáticas (
 | Medida | Implementación |
 |---|---|
 | Hash de contraseñas | Argon2id (64 MiB, t=3) y verificación ficticia para igualar tiempos si el usuario no existe |
-| Sesiones | JWT de acceso de 15 min (`jose`, HS256, emisor verificado) ligado a una sesión (`sid`) que se comprueba en BD en cada petición. El logout, la rotación o un cambio de contraseña lo invalidan **al instante** |
+| Sesiones | JWT de acceso de 15 min (`jose`, HS256, emisor verificado) ligado a una sesión (`sid`) que se comprueba en BD en cada petición. El logout o la rotación lo invalidan **al instante** |
 | Refresh token | Opaco, 7 días, guardado como hash; rotación con actualización condicional. Si se reutiliza uno ya rotado, se cierran todas las sesiones del usuario |
 | Cookies | `HttpOnly`; `SameSite=Lax` (acceso) y `Strict` (refresh, limitada a `/api/v1/auth`); `Secure` en producción. Nunca hay tokens en `localStorage` |
 | CSRF | Cookies `SameSite`; rechazo de `Sec-Fetch-Site: cross-site` y verificación de `Origin` en toda petición que modifica datos |
-| Fuerza bruta | Rate limiting en PostgreSQL **por IP y por cuenta**: login 5/min por IP y 10/15 min por cuenta; recuperación 3/min por IP y 3/h por correo; reservas 10/min por IP y 60/10 min por Baby Shower. Bloqueo de 15 min tras 5 fallos |
+| Fuerza bruta | Rate limiting en PostgreSQL **por IP y por cuenta**: login 5/min por IP y 10/15 min por cuenta; registro 5/min por IP; reservas 10/min por IP y 60/10 min por Baby Shower. Bloqueo de 15 min tras 5 fallos |
 | IP del cliente | Se prioriza `x-vercel-forwarded-for` (no falsificable en Vercel) y solo se aceptan IPs válidas. Las claves se guardan como hash de longitud fija |
 | Tamaño de peticiones | JSON: máx. 100 KB; imágenes: 2 MB + margen. El límite se aplica al leer el stream, aunque no haya `Content-Length` |
 | Validación | Esquemas zod estrictos (`strictObject`: rechazan campos desconocidos) y validación de parámetros de ruta (UUID y slugs) |
@@ -128,7 +126,7 @@ Auditoría del 2026-11-04: cada medida está cubierta por pruebas automáticas (
 |---|---|
 | `script-src 'unsafe-inline'` en la CSP | Next lo necesita para hidratar sin nonces. Mitigado porque React escapa todo y no hay HTML dinámico. Mejora futura: nonces con `proxy.ts` |
 | Bloqueo de cuenta provocado por un tercero (5 intentos fallidos) | Es el precio de frenar la fuerza bruta. Dura 15 min |
-| Enumeración de correos en el registro (`AUTH_EMAIL_TAKEN`) | Decisión de usabilidad. La recuperación de contraseña sí responde igual exista o no el correo |
-| Sin verificación de correo al registrarse | Fuera del alcance del MVP (no hay proveedor de correo) |
+| Enumeración de correos en el registro (`AUTH_EMAIL_TAKEN`) | Decisión de usabilidad |
+| Sin verificación de correo ni recuperación de contraseña | No hay proveedor de correo. Si alguien olvida su contraseña, hay que restablecerla a mano en la BD (o restaurar la funcionalidad del historial de git al configurar Resend/SMTP) |
 | Reservas falsas de invitados anónimos | Limitadas por IP y por Baby Shower; los padres pueden cancelarlas desde el panel |
 | Fuera de Vercel, las cabeceras de IP se pueden falsear si el proxy no las sobrescribe | El límite por cuenta sigue protegiendo. Hay que desplegar detrás de un proxy que fije `x-real-ip` |

@@ -86,7 +86,6 @@ export async function reserveGift(
         confirmationCode: randomConfirmationCode(),
         giftId: gift.id,
         guestName: input.guestName,
-        guestEmail: input.guestEmail ?? null,
         quantity: input.quantity,
         message: input.message ?? null,
         // El invitado confirma la reserva al enviarla.

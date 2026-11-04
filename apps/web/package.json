@@ -2,7 +2,7 @@
   "name": "@mbs/web",
   "version": "0.2.0",
   "private": true,
-  "description": "My Baby Shower: aplicaci\u00f3n full-stack (Next.js: interfaz + API).",
+  "description": "My Baby Shower: aplicación full-stack (Next.js: interfaz + API).",
   "license": "MIT",
   "type": "module",
   "scripts": {

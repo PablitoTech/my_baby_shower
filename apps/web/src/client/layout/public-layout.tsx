@@ -83,7 +83,6 @@ export function PublicLayout({ children }: { children: ReactNode }) {
             <ul>
               <li><Link href="/register">{t('nav.register')}</Link></li>
               <li><Link href="/login">{t('nav.login')}</Link></li>
-              <li><Link href="/forgot-password">{t('auth.login.forgot')}</Link></li>
             </ul>
           </div>
           <div className="lang">

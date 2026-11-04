@@ -6,12 +6,12 @@ const envSchema = z.object({
   JWT_ACCESS_SECRET: z.string().min(32, 'JWT_ACCESS_SECRET debe tener al menos 32 caracteres'),
   JWT_ACCESS_TTL_MINUTES: z.coerce.number().int().positive().default(15),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(7),
-  PASSWORD_RESET_TTL_MINUTES: z.coerce.number().int().positive().default(30),
-  /** URL pública de la app (enlaces de correo). Si falta, se usa el origen de la petición. */
+  /** URL pública de la app. */
   APP_URL: z.url().optional(),
   /** Orígenes adicionales permitidos para peticiones que modifican datos (separados por coma). */
   ALLOWED_ORIGINS: z.string().optional(),
   RATE_LIMIT_DISABLED: z.enum(['true', 'false']).default('false'),
+
 });
 
 export type Env = z.infer<typeof envSchema>;
