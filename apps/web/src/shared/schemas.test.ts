@@ -30,8 +30,8 @@ describe('schemas', () => {
     expect(decodeMessage(r.error!.issues[0]!.message)).toEqual({ key: 'validation.maxlength', params: { max: 120 } });
   });
 
-  it('trata el correo vacío del invitado como ausente', () => {
-    expect(createReservationSchema.parse({ guestName: 'Rosa', guestEmail: '', quantity: 1 }).guestEmail).toBeUndefined();
-    expect(createReservationSchema.safeParse({ guestName: 'Rosa', guestEmail: 'no-es-correo', quantity: 1 }).success).toBe(false);
+  it('la reserva solo acepta nombre, cantidad y mensaje opcional', () => {
+    expect(createReservationSchema.parse({ guestName: ' Rosa ', quantity: 1, message: '' })).toEqual({ guestName: 'Rosa', quantity: 1 });
+    expect(createReservationSchema.safeParse({ guestName: 'Rosa', guestEmail: 'rosa@example.com', quantity: 1 }).success).toBe(false);
   });
 });

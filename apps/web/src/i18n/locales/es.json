@@ -112,7 +112,6 @@
       "identifier": "Correo electrónico o usuario",
       "password": "Contraseña",
       "submit": "Iniciar sesión",
-      "forgot": "¿Olvidaste tu contraseña?",
       "noAccount": "¿Aún no tienes cuenta?",
       "createAccount": "Crea tu Baby Shower"
     },
@@ -137,24 +136,6 @@
       "submit": "Crear mi Baby Shower",
       "haveAccount": "¿Ya tienes cuenta?",
       "login": "Inicia sesión"
-    },
-    "forgot": {
-      "title": "Recupera tu contraseña",
-      "subtitle": "Escribe tu correo y te enviaremos un enlace para crear una nueva contraseña.",
-      "email": "Correo electrónico",
-      "submit": "Enviar enlace",
-      "sent": "Si el correo está registrado, recibirás un enlace para restablecer tu contraseña en los próximos minutos.",
-      "backToLogin": "Volver a iniciar sesión"
-    },
-    "reset": {
-      "title": "Crea una nueva contraseña",
-      "subtitle": "Elige una contraseña segura que no uses en otros sitios.",
-      "password": "Nueva contraseña",
-      "confirmPassword": "Confirmar nueva contraseña",
-      "submit": "Guardar contraseña",
-      "success": "¡Listo! Tu contraseña se actualizó. Ya puedes iniciar sesión.",
-      "goToLogin": "Ir a iniciar sesión",
-      "missingToken": "El enlace de recuperación no es válido. Solicita uno nuevo."
     },
     "showPassword": "Mostrar contraseña",
     "hidePassword": "Ocultar contraseña"
@@ -185,7 +166,6 @@
     "AUTH_EMAIL_TAKEN": "Ese correo electrónico ya está registrado.",
     "AUTH_USERNAME_TAKEN": "Ese nombre de usuario ya está en uso.",
     "AUTH_PASSWORD_MISMATCH": "Las contraseñas no coinciden.",
-    "AUTH_INVALID_RESET_TOKEN": "El enlace de recuperación no es válido o expiró. Solicita uno nuevo.",
     "AUTH_SESSION_EXPIRED": "Tu sesión expiró. Inicia sesión de nuevo.",
     "GIFT_NOT_FOUND": "El regalo no existe o fue eliminado.",
     "GIFT_QUANTITY_BELOW_RESERVED": "La cantidad no puede ser menor que las unidades ya reservadas.",
@@ -336,7 +316,6 @@
     "formTitle": "Reservar «{{gift}}»",
     "formSubtitle": "Quedan {{count}} unidades disponibles.",
     "guestName": "Tu nombre completo",
-    "guestEmail": "Tu correo electrónico",
     "quantity": "Cantidad",
     "message": "Mensaje para los padres",
     "messagePlaceholder": "Escribe unas palabras bonitas…",

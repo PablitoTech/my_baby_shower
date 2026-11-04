@@ -2,14 +2,13 @@ import { ERROR_CODES } from '@mbs/common';
 import type { AuthUser } from '@mbs/contracts';
 import type { z } from 'zod';
 import type { User } from '../../generated/prisma/client';
-import type { loginSchema, registerSchema, resetPasswordSchema } from '../../shared/schemas';
+import type { loginSchema, registerSchema } from '../../shared/schemas';
 import { hashPassword, verifyDummy, verifyPassword } from '../auth/password';
 import { signAccessToken } from '../auth/jwt';
 import { randomToken, sha256 } from '../crypto';
 import { db } from '../db/prisma';
 import { env } from '../env';
 import { ApiError } from '../http/errors';
-import { sendPasswordResetEmail } from '../mail';
 
 export const MAX_FAILED_LOGINS = 5;
 export const LOCK_MINUTES = 15;
@@ -136,36 +135,4 @@ export async function me(userId: string): Promise<AuthUser> {
   const user = await db().user.findUnique({ where: { id: userId } });
   if (!user || user.status !== 'ACTIVE') throw new ApiError(401, ERROR_CODES.UNAUTHORIZED);
   return toAuthUser(user);
-}
-
-/** Siempre responde igual, exista o no el correo (evita enumeración de cuentas). */
-export async function forgotPassword(email: string, appUrl: string): Promise<void> {
-  const user = await db().user.findUnique({ where: { email } });
-  if (!user || user.status !== 'ACTIVE') return;
-  const token = randomToken(32);
-  await db().$transaction([
-    db().passwordResetToken.updateMany({ where: { userId: user.id, usedAt: null }, data: { usedAt: new Date() } }),
-    db().passwordResetToken.create({
-      data: {
-        userId: user.id,
-        tokenHash: sha256(token),
-        expiresAt: new Date(Date.now() + env().PASSWORD_RESET_TTL_MINUTES * 60_000),
-      },
-    }),
-  ]);
-  await sendPasswordResetEmail(user.email, `${appUrl}/reset-password?token=${encodeURIComponent(token)}`);
-}
-
-export async function resetPassword(input: z.output<typeof resetPasswordSchema>): Promise<void> {
-  const record = await db().passwordResetToken.findUnique({ where: { tokenHash: sha256(input.token) } });
-  if (!record || record.usedAt || record.expiresAt <= new Date()) {
-    throw new ApiError(400, ERROR_CODES.AUTH_INVALID_RESET_TOKEN);
-  }
-  const passwordHash = await hashPassword(input.password);
-  const now = new Date();
-  await db().$transaction([
-    db().passwordResetToken.update({ where: { id: record.id }, data: { usedAt: now } }),
-    db().user.update({ where: { id: record.userId }, data: { passwordHash, failedLoginAttempts: 0, lockedUntil: null } }),
-    db().session.updateMany({ where: { userId: record.userId, revokedAt: null }, data: { revokedAt: now } }),
-  ]);
 }

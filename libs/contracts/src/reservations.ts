@@ -2,7 +2,6 @@ import type { ReservationStatus } from './enums';
 
 export interface CreateReservationRequest {
   guestName: string;
-  guestEmail?: string;
   quantity: number;
   message?: string;
 }
@@ -18,7 +17,6 @@ export interface ReservationDto {
   confirmationCode: string;
   gift: { id: string; name: string };
   guestName: string;
-  guestEmail: string | null;
   quantity: number;
   message: string | null;
   status: ReservationStatus;

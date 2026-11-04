@@ -112,7 +112,6 @@
       "identifier": "Email or username",
       "password": "Password",
       "submit": "Log in",
-      "forgot": "Forgot your password?",
       "noAccount": "Don't have an account yet?",
       "createAccount": "Create your Baby Shower"
     },
@@ -137,24 +136,6 @@
       "submit": "Create my Baby Shower",
       "haveAccount": "Already have an account?",
       "login": "Log in"
-    },
-    "forgot": {
-      "title": "Reset your password",
-      "subtitle": "Enter your email and we'll send you a link to create a new password.",
-      "email": "Email",
-      "submit": "Send link",
-      "sent": "If the email is registered, you'll receive a link to reset your password in the next few minutes.",
-      "backToLogin": "Back to log in"
-    },
-    "reset": {
-      "title": "Create a new password",
-      "subtitle": "Choose a strong password you don't use on other sites.",
-      "password": "New password",
-      "confirmPassword": "Confirm new password",
-      "submit": "Save password",
-      "success": "Done! Your password was updated. You can now log in.",
-      "goToLogin": "Go to log in",
-      "missingToken": "The reset link is not valid. Please request a new one."
     },
     "showPassword": "Show password",
     "hidePassword": "Hide password"
@@ -185,7 +166,6 @@
     "AUTH_EMAIL_TAKEN": "That email is already registered.",
     "AUTH_USERNAME_TAKEN": "That username is already taken.",
     "AUTH_PASSWORD_MISMATCH": "Passwords don't match.",
-    "AUTH_INVALID_RESET_TOKEN": "The reset link is invalid or has expired. Please request a new one.",
     "AUTH_SESSION_EXPIRED": "Your session has expired. Please log in again.",
     "GIFT_NOT_FOUND": "The gift doesn't exist or was deleted.",
     "GIFT_QUANTITY_BELOW_RESERVED": "The quantity can't be lower than the units already reserved.",
@@ -336,7 +316,6 @@
     "formTitle": "Reserve “{{gift}}”",
     "formSubtitle": "{{count}} units left.",
     "guestName": "Your full name",
-    "guestEmail": "Your email",
     "quantity": "Quantity",
     "message": "Message for the parents",
     "messagePlaceholder": "Write a few kind words…",

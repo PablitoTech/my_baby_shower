@@ -26,7 +26,7 @@ export function errorCode(error: unknown): string | null {
 }
 
 /** Endpoints que nunca disparan un refresco de sesión. */
-const NO_REFRESH = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/logout', '/auth/forgot-password', '/auth/reset-password'];
+const NO_REFRESH = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/logout'];
 
 let refreshInFlight: Promise<boolean> | null = null;
 let onSessionExpired: (() => void) | null = null;

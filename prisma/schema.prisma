@@ -61,7 +61,6 @@ model User {
 
   babyShower          BabyShower?
   sessions            Session[]
-  passwordResetTokens PasswordResetToken[]
 
   @@map("users")
 }
@@ -85,20 +84,6 @@ model Session {
   @@map("sessions")
 }
 
-/// Token de un solo uso para recuperar la contraseña. Solo se guarda el hash SHA-256.
-model PasswordResetToken {
-  id        String    @id @default(uuid(7)) @db.Uuid
-  userId    String    @map("user_id") @db.Uuid
-  tokenHash String    @unique @map("token_hash") @db.Char(64)
-  expiresAt DateTime  @map("expires_at") @db.Timestamptz(3)
-  usedAt    DateTime? @map("used_at") @db.Timestamptz(3)
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@map("password_reset_tokens")
-}
 
 // ---------------------------------------------------------------------------
 // Baby Shower
@@ -184,7 +169,6 @@ model GiftReservation {
   confirmationCode String            @unique @map("confirmation_code") @db.VarChar(16)
   giftId           String            @map("gift_id") @db.Uuid
   guestName        String            @map("guest_name") @db.VarChar(120)
-  guestEmail       String?           @map("guest_email") @db.VarChar(254)
   quantity         Int
   message          String?           @db.VarChar(500)
   status           ReservationStatus @default(CONFIRMED)

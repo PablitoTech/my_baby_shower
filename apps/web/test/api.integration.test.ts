@@ -5,8 +5,6 @@ import * as login from '@/app/api/v1/auth/login/route';
 import * as refresh from '@/app/api/v1/auth/refresh/route';
 import * as logout from '@/app/api/v1/auth/logout/route';
 import * as me from '@/app/api/v1/auth/me/route';
-import * as forgot from '@/app/api/v1/auth/forgot-password/route';
-import * as reset from '@/app/api/v1/auth/reset-password/route';
 import * as categories from '@/app/api/v1/categories/route';
 import * as gifts from '@/app/api/v1/gifts/route';
 import * as gift from '@/app/api/v1/gifts/[id]/route';
@@ -20,7 +18,6 @@ import * as reserve from '@/app/api/v1/public/baby-showers/[slug]/gifts/[giftId]
 import * as reservations from '@/app/api/v1/reservations/route';
 import * as reservationStatus from '@/app/api/v1/reservations/[id]/status/route';
 import { db } from '@/server/db/prisma';
-import { sha256 } from '@/server/crypto';
 
 const PASSWORD = 'IntegracionTest1';
 const registration = (suffix: string) => ({
@@ -129,16 +126,6 @@ describe('API my_baby_shower (integración con PostgreSQL)', () => {
       expect((await thief.call(me.GET)).status).toBe(401);
     });
 
-    it('recupera la contraseña con un token de un solo uso', async () => {
-      expect((await new TestClient().call(forgot.POST, { method: 'POST', body: { email: 'nadie@example.test' } })).status).toBe(204);
-      await new TestClient().call(register.POST, { method: 'POST', body: registration('reset') });
-      const user = await db().user.findUniqueOrThrow({ where: { username: 'userreset' } });
-      await db().passwordResetToken.create({ data: { userId: user.id, tokenHash: sha256('token-de-prueba'), expiresAt: new Date(Date.now() + 60_000) } });
-      const body = { token: 'token-de-prueba', password: 'NuevaClave123', confirmPassword: 'NuevaClave123' };
-      expect((await new TestClient().call(reset.POST, { method: 'POST', body })).status).toBe(204);
-      expect((await new TestClient().call(reset.POST, { method: 'POST', body })).body.code).toBe('AUTH_INVALID_RESET_TOKEN');
-      expect((await new TestClient().call(login.POST, { method: 'POST', body: { identifier: 'userreset', password: 'NuevaClave123' } })).status).toBe(200);
-    });
   });
 
   describe('regalos, publicación y reservas', () => {

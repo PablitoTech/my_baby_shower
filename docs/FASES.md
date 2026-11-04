@@ -23,6 +23,8 @@ Este documento describe el plan de desarrollo incremental de **my_baby_shower**,
 | 12 | Documentación y cierre del MVP | Completada |
 | 13 | Migración a Next.js full-stack y despliegue en Vercel | Completada |
 | 14 | Simplificación del flujo de reservas | Completada |
+| 15 | Retiro de la recuperación de contraseña | Completada |
+| 16 | Reserva sin correo del invitado | Completada |
 
 Estados posibles: `Pendiente`, `En progreso`, `Completada`, `Bloqueada`.
 
@@ -437,6 +439,39 @@ Estados posibles: `Pendiente`, `En progreso`, `Completada`, `Bloqueada`.
 - 18 pruebas unitarias y 19 de integración en verde (incluye que dos cancelaciones simultáneas liberan las unidades una sola vez).
 - Verificado en el navegador: una reserva confirmada muestra "Marcar como entregado" y "Cancelar reserva"; al cancelar pide confirmación, libera la unidad y la reserva queda sin acciones.
 - **Pendiente:** aplicar las dos migraciones en producción (`npm run prisma:deploy:prod`).
+
+---
+
+## Fase 15 — Retiro de la recuperación de contraseña
+
+**Motivo:** no hay un proveedor de correo (host) para enviar el enlace, así que la opción mostraba "recibirás un enlace" sin que llegara nada.
+
+### Cambios respecto a la especificación original
+
+- Se eliminan el enlace "¿Olvidaste tu contraseña?" del login y del pie de página, las páginas `/forgot-password` y `/reset-password`, los endpoints `/api/v1/auth/forgot-password` y `/reset-password`, el módulo de correo (Resend/SMTP) y la dependencia `nodemailer`.
+- Migración `20261104220000_remove_password_reset`: elimina la tabla `password_reset_tokens`.
+- La implementación completa sigue en el historial de git y puede restaurarse cuando haya un proveedor de correo.
+
+### Resultado
+
+- 18 pruebas unitarias y 18 de integración en verde; build sin errores; `npm audit`: 0 vulnerabilidades.
+- Las rutas antiguas responden 404 y el login ya no muestra el enlace.
+- **Pendiente:** se aplicará en producción con el próximo despliegue (o `npm run prisma:deploy:prod`).
+
+---
+
+## Fase 16 — Reserva sin correo del invitado
+
+**Cambio respecto a la especificación original:** el formulario de reserva ya no pide correo. Quedan **nombre completo**, **cantidad** y **mensaje para los padres** (opcional).
+
+- Se quita el campo del formulario, del esquema de la API (enviar `guestEmail` ahora devuelve 400), del contrato y del panel de reservas.
+- Migración `20261104230000_remove_guest_email`: elimina la columna `guest_email`.
+
+### Resultado
+
+- 18 pruebas unitarias y 18 de integración en verde; build sin errores.
+- Verificado: el formulario muestra solo los tres campos y la reserva se guarda.
+- **Pendiente:** se aplicará en producción con el próximo despliegue.
 
 ---
 

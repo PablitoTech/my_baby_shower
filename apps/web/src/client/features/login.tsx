@@ -55,9 +55,6 @@ export function LoginPage() {
             <Field id="password" label={t('auth.login.password')} error={e.password}>
               <PasswordInput {...a11y('password', e.password)} autoComplete="current-password" {...register('password')} />
             </Field>
-            <div className="row-between">
-              <Link href="/forgot-password">{t('auth.login.forgot')}</Link>
-            </div>
             <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={formState.isSubmitting}>
               {t(formState.isSubmitting ? 'common.loading' : 'auth.login.submit')}
             </button>

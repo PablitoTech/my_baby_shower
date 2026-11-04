@@ -25,13 +25,6 @@ const email = () =>
     .string(msg('validation.required'))
     .transform((v) => v.trim().toLowerCase())
     .pipe(z.string().min(1, msg('validation.required')).max(V.EMAIL_MAX, msg('validation.maxlength', { max: V.EMAIL_MAX })).pipe(z.email(msg('validation.email'))));
-const optionalEmail = () =>
-  z
-    .string()
-    .transform((v) => v.trim().toLowerCase())
-    .pipe(z.union([z.literal(''), z.email(msg('validation.email')).max(V.EMAIL_MAX, msg('validation.maxlength', { max: V.EMAIL_MAX }))]))
-    .optional()
-    .transform((v) => (v ? v : undefined));
 const password = () =>
   z
     .string(msg('validation.required'))
@@ -87,12 +80,6 @@ export const eventFormSchema = z.object({
   description: z.string().transform(clean).pipe(z.string().max(V.EVENT_DESCRIPTION_MAX, msg('validation.maxlength', { max: V.EVENT_DESCRIPTION_MAX }))),
 });
 
-export const resetPasswordFormSchema = z
-  .object({
-    password: password(),
-    confirmPassword: z.string(msg('validation.required')).min(1, msg('validation.required')),
-  })
-  .refine(passwordsMatch, mismatch);
 
 export const registerSchema = z
   .strictObject({
@@ -117,15 +104,7 @@ export const loginSchema = z.strictObject({
   password: z.string(msg('validation.required')).min(1, msg('validation.required')).max(V.PASSWORD_MAX),
 });
 
-export const forgotPasswordSchema = z.strictObject({ email: email() });
 
-export const resetPasswordSchema = z
-  .strictObject({
-    token: z.string().min(1).max(128),
-    password: password(),
-    confirmPassword: z.string(msg('validation.required')).min(1, msg('validation.required')),
-  })
-  .refine(passwordsMatch, mismatch);
 
 // ---------------------------------------------------------------- Baby Shower
 export const updateBabyShowerSchema = z.strictObject({
@@ -166,7 +145,6 @@ export const giftFiltersSchema = z.object({
 // ---------------------------------------------------------------- Reservas
 export const createReservationSchema = z.strictObject({
   guestName: text(V.GUEST_NAME_MAX),
-  guestEmail: optionalEmail(),
   quantity: quantity(),
   message: optionalText(V.GUEST_MESSAGE_MAX),
 });
@@ -175,8 +153,7 @@ export const createReservationSchema = z.strictObject({
 export const reservationFormSchema = (available: number) =>
   z.object({
     guestName: text(V.GUEST_NAME_MAX),
-    guestEmail: optionalEmail(),
-    quantity: quantity(available),
+      quantity: quantity(available),
     message: optionalText(V.GUEST_MESSAGE_MAX),
   });
 

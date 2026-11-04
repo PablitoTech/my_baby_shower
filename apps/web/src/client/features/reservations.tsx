@@ -119,7 +119,6 @@ export function ReservationsPage() {
                       <StatusBadge status={r.status} type="reservation" />
                     </div>
                     <p className="gift"><span aria-hidden="true">🎁</span> <strong>{r.quantity} ×</strong> {r.gift.name}</p>
-                    {r.guestEmail && <p className="muted"><a href={`mailto:${r.guestEmail}`}>{r.guestEmail}</a></p>}
                     {r.message && <blockquote>“{r.message}”</blockquote>}
                     <details>
                       <summary>{t('reservations.history')} · {t('reservations.code')} {r.confirmationCode}</summary>
