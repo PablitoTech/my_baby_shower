@@ -1,0 +1,51 @@
+{
+  "name": "my_baby_shower",
+  "version": "0.1.0",
+  "description": "Plataforma web para organizar Baby Showers y gestionar listas de regalos.",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0",
+    "npm": ">=11.0.0"
+  },
+  "workspaces": [
+    "libs/common",
+    "libs/contracts",
+    "libs/shared",
+    "apps/backend",
+    "apps/frontend"
+  ],
+  "scripts": {
+    "db:up": "docker compose -f infrastructure/docker/docker-compose.yml --env-file environment.m up -d",
+    "db:down": "docker compose -f infrastructure/docker/docker-compose.yml --env-file environment.m down",
+    "db:status": "docker compose -f infrastructure/docker/docker-compose.yml --env-file environment.m ps",
+    "db:logs": "docker compose -f infrastructure/docker/docker-compose.yml --env-file environment.m logs -f postgres",
+    "db:psql": "docker exec -it my_baby_shower_postgres sh -c 'psql -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\"'",
+    "db:destroy": "docker compose -f infrastructure/docker/docker-compose.yml --env-file environment.m down -v",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
+    "prisma:seed": "prisma db seed",
+    "prisma:studio": "prisma studio",
+    "build:libs": "tsc -b libs/common libs/contracts libs/shared",
+    "build": "npm run build:libs && npm run prisma:generate && npm run build -w apps/backend && npm run build -w apps/frontend",
+    "dev:backend": "npm run start:dev -w apps/backend",
+    "dev:frontend": "npm run start -w apps/frontend",
+    "dev": "npm run build:libs && concurrently -k -n api,web -c magenta,cyan \"npm:dev:backend\" \"npm:dev:frontend\"",
+    "test": "npm run build:libs && npm run test -w libs/shared && npm run test -w apps/backend && npm run test -w apps/frontend -- --watch=false",
+    "test:e2e": "npm run test:e2e -w apps/backend",
+    "postinstall": "npm run build:libs && prisma generate",
+    "audit": "npm audit --omit=dev"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.6",
+    "dotenv": "^18.0.9",
+    "prisma": "7.10.1",
+    "tsx": "^4.23.15",
+    "typescript": "~6.0.3"
+  },
+  "overrides": {
+    "minimatch": "^11.0.4"
+  }
+}

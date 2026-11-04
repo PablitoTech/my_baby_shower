@@ -1,0 +1,41 @@
+<a class="skip-link" href="#main">{{ 'nav.skipToContent' | translate }}</a>
+
+<header class="topbar">
+  <div class="container bar">
+    <app-brand link="/dashboard" />
+
+    <button
+      type="button"
+      class="menu-toggle"
+      [attr.aria-expanded]="menuOpen()"
+      aria-controls="app-nav"
+      [attr.aria-label]="(menuOpen() ? 'nav.closeMenu' : 'nav.openMenu') | translate"
+      (click)="menuOpen.set(!menuOpen())"
+    >
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav id="app-nav" class="nav" [class.open]="menuOpen()" [attr.aria-label]="'nav.mainNav' | translate">
+      <ul>
+        @for (link of links; track link.path) {
+          <li>
+            <a [routerLink]="link.path" routerLinkActive="active" ariaCurrentWhenActive="page">
+              <span aria-hidden="true">{{ link.icon }}</span> {{ link.key | translate }}
+            </a>
+          </li>
+        }
+      </ul>
+      <div class="tools">
+        <app-language-switcher />
+        @if (session.user(); as user) {
+          <span class="user" title="{{ user.email }}">&#64;{{ user.username }}</span>
+        }
+        <button type="button" class="btn btn-secondary btn-sm" (click)="logout()">{{ 'nav.logout' | translate }}</button>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="container content" tabindex="-1">
+  <router-outlet />
+</main>

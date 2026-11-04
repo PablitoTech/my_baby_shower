@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 320" role="img">
+  <circle cx="200" cy="170" r="140" fill="#F9DBE3"/>
+  <!-- globos -->
+  <path d="M90 140c10 40 10 80 20 120" stroke="#C9B8E6" stroke-width="2" fill="none"/>
+  <ellipse cx="88" cy="108" rx="26" ry="32" fill="#E6DDF4"/>
+  <path d="M310 130c-10 40-10 80-24 130" stroke="#C9B8E6" stroke-width="2" fill="none"/>
+  <ellipse cx="312" cy="98" rx="26" ry="32" fill="#D4E9F7"/>
+  <path d="M200 90v60" stroke="#C9B8E6" stroke-width="2"/>
+  <ellipse cx="200" cy="64" rx="22" ry="28" fill="#D5F0E4"/>
+  <!-- invitados -->
+  <g>
+    <path d="M100 300c0-50 14-80 44-80s44 30 44 80z" fill="#D5F0E4"/>
+    <circle cx="144" cy="196" r="24" fill="#F3D9C2"/>
+    <path d="M120 192c0-22 46-26 48 0-8-8-18-10-26-10s-16 4-22 10z" fill="#3B3548"/>
+    <path d="M136 198c2 2 5 2 7 0M150 198c2 2 5 2 7 0" stroke="#3B3548" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M140 208c3 3 7 3 10 0" stroke="#B14D72" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </g>
+  <g>
+    <path d="M206 300c0-50 14-84 46-84s46 34 46 84z" fill="#E6DDF4"/>
+    <circle cx="252" cy="190" r="24" fill="#FCE9D8"/>
+    <path d="M226 192c-4-30 50-34 52-4l-4 20c-2-14-8-24-22-26-10 0-18 4-26 10z" fill="#E8B04C" opacity=".85"/>
+    <path d="M244 192c2 2 5 2 7 0M258 192c2 2 5 2 7 0" stroke="#3B3548" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M248 202c3 3 7 3 10 0" stroke="#B14D72" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </g>
+  <!-- regalo en manos -->
+  <rect x="172" y="250" width="56" height="44" rx="8" fill="#F5EBDD"/>
+  <rect x="195" y="250" width="10" height="44" fill="#F2C3D2"/>
+  <path d="M200 250c-10-16-26-8-16 0zM200 250c10-16 26-8 16 0z" fill="#F2C3D2"/>
+  <g fill="#fff"><circle cx="60" cy="220" r="4"/><circle cx="340" cy="210" r="4"/><circle cx="250" cy="120" r="3"/></g>
+</svg>

@@ -1,0 +1,47 @@
+<section class="auth-shell">
+  <div class="auth-card">
+    <h1>{{ 'auth.login.title' | translate }}</h1>
+    <p class="subtitle">{{ 'auth.login.subtitle' | translate }}</p>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      @if (error(); as e) {
+        <div class="alert alert-error" role="alert">{{ e | translate }}</div>
+      }
+
+      <div class="field">
+        <label for="identifier">{{ 'auth.login.identifier' | translate }}</label>
+        <input id="identifier" type="text" formControlName="identifier" autocomplete="username" autocapitalize="none"
+          [attr.aria-invalid]="form.controls.identifier.touched && form.controls.identifier.invalid"
+          aria-describedby="identifier-error" />
+        <app-field-error [control]="form.controls.identifier" errorId="identifier-error" />
+      </div>
+
+      <div class="field">
+        <label for="password">{{ 'auth.login.password' | translate }}</label>
+        <div class="password-wrap">
+          <input id="password" [type]="showPassword() ? 'text' : 'password'" formControlName="password" autocomplete="current-password"
+            [attr.aria-invalid]="form.controls.password.touched && form.controls.password.invalid"
+            aria-describedby="password-error" />
+          <button type="button" (click)="showPassword.set(!showPassword())"
+            [attr.aria-label]="(showPassword() ? 'auth.hidePassword' : 'auth.showPassword') | translate">
+            {{ showPassword() ? '🙈' : '👁️' }}
+          </button>
+        </div>
+        <app-field-error [control]="form.controls.password" errorId="password-error" />
+      </div>
+
+      <div class="row-between">
+        <a routerLink="/forgot-password">{{ 'auth.login.forgot' | translate }}</a>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg btn-block" [disabled]="submitting()">
+        {{ (submitting() ? 'common.loading' : 'auth.login.submit') | translate }}
+      </button>
+    </form>
+
+    <p class="auth-footer">
+      {{ 'auth.login.noAccount' | translate }}
+      <a routerLink="/register">{{ 'auth.login.createAccount' | translate }}</a>
+    </p>
+  </div>
+</section>

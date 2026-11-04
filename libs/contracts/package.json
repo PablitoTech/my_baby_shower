@@ -1,0 +1,9 @@
+{
+  "name": "@mbs/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Contratos (enums, peticiones y respuestas) de la API de my_baby_shower.",
+  "type": "module",
+  "exports": { ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" } },
+  "sideEffects": false
+}

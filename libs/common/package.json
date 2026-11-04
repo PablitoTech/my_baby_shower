@@ -1,0 +1,9 @@
+{
+  "name": "@mbs/common",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Constantes y reglas de validación comunes a frontend y backend.",
+  "type": "module",
+  "exports": { ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" } },
+  "sideEffects": false
+}

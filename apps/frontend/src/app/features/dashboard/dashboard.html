@@ -1,0 +1,111 @@
+@if (error(); as e) {
+  <div class="alert alert-error" role="alert">
+    {{ e | translate }} <button type="button" class="btn btn-sm btn-secondary" (click)="load()">{{ 'common.retry' | translate }}</button>
+  </div>
+}
+
+@if (summary(); as s) {
+  <section class="hero-card fade-up">
+    <div>
+      <p class="eyebrow">{{ 'dashboard.eyebrow' | translate }}</p>
+      <h1 class="baby-name">{{ s.babyShower.babyName }}</h1>
+      <dl class="meta">
+        <div>
+          <dt>{{ 'dashboard.eventDate' | translate }}</dt>
+          <dd>{{ s.babyShower.eventDate | date: 'fullDate' : undefined : language.locale() }} · {{ s.babyShower.eventDate | date: 'shortTime' : undefined : language.locale() }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'dashboard.parents' | translate }}</dt>
+          <dd>{{ s.babyShower.fatherName }} &amp; {{ s.babyShower.motherName }}</dd>
+        </div>
+      </dl>
+      @if (s.babyShower.description) {
+        <p class="description">{{ s.babyShower.description }}</p>
+      }
+    </div>
+    @if (countdown(); as c) {
+      <div class="countdown">{{ c.key | translate: c.params }}</div>
+    }
+  </section>
+
+  <section class="grid stats" [attr.aria-label]="'dashboard.summaryTitle' | translate">
+    <article class="stat stat-lavender">
+      <span class="stat-value">{{ s.gifts.total }}</span>
+      <span class="stat-label">{{ 'dashboard.giftsTotal' | translate }}</span>
+    </article>
+    <article class="stat stat-mint">
+      <span class="stat-value">{{ s.gifts.available }}</span>
+      <span class="stat-label">{{ 'dashboard.available' | translate }}</span>
+    </article>
+    <article class="stat stat-beige">
+      <span class="stat-value">{{ s.gifts.partiallyReserved }}</span>
+      <span class="stat-label">{{ 'dashboard.partial' | translate }}</span>
+    </article>
+    <article class="stat stat-pink">
+      <span class="stat-value">{{ s.gifts.reserved }}</span>
+      <span class="stat-label">{{ 'dashboard.reserved' | translate }}</span>
+    </article>
+  </section>
+
+  <div class="grid two">
+    <section class="card">
+      <h2>{{ 'dashboard.summaryTitle' | translate }}</h2>
+      <div class="progress" role="progressbar" [attr.aria-valuenow]="progress()" aria-valuemin="0" aria-valuemax="100">
+        <span [style.width.%]="progress()"></span>
+      </div>
+      <p class="muted">{{ 'dashboard.units' | translate: { reserved: s.gifts.unitsReserved, required: s.gifts.unitsRequired } }}</p>
+
+      <h3>{{ 'dashboard.reservationsTitle' | translate }}</h3>
+      <ul class="res-list">
+        <li><span class="badge badge-pending">{{ 'dashboard.pending' | translate }}</span> {{ s.reservations.pending }}</li>
+        <li><span class="badge badge-confirmed">{{ 'dashboard.confirmed' | translate }}</span> {{ s.reservations.confirmed }}</li>
+        <li><span class="badge badge-delivered">{{ 'dashboard.delivered' | translate }}</span> {{ s.reservations.delivered }}</li>
+        <li><span class="badge badge-cancelled">{{ 'dashboard.cancelled' | translate }}</span> {{ s.reservations.cancelled }}</li>
+      </ul>
+    </section>
+
+    <section class="card link-card">
+      <h2>{{ 'dashboard.publicLinkTitle' | translate }}</h2>
+      @if (s.babyShower.isPublished && publicUrl(); as url) {
+        <p>{{ 'dashboard.published' | translate }}</p>
+        <div class="link-box">
+          <label class="sr-only" for="public-url">{{ 'dashboard.publicLinkTitle' | translate }}</label>
+          <input id="public-url" class="input" [value]="url" readonly (focus)="$any($event.target).select()" />
+          <button type="button" class="btn btn-primary" (click)="copyLink()">📋 {{ 'dashboard.copyLink' | translate }}</button>
+        </div>
+        <div class="actions">
+          <a class="btn btn-secondary btn-sm" [href]="url" target="_blank" rel="noopener">{{ 'dashboard.openLink' | translate }} ↗</a>
+          <button type="button" class="btn btn-ghost btn-sm" [disabled]="busy()" (click)="togglePublish(false)">{{ 'dashboard.unpublish' | translate }}</button>
+        </div>
+      } @else {
+        <p>{{ (s.babyShower.publicSlug ? 'dashboard.unpublishedWithLink' : 'dashboard.notPublished') | translate }}</p>
+        <button type="button" class="btn btn-primary btn-lg" [disabled]="busy()" (click)="togglePublish(true)">
+          🚀 {{ (s.babyShower.publicSlug ? 'dashboard.republish' : 'dashboard.publish') | translate }}
+        </button>
+      }
+    </section>
+  </div>
+
+  <section>
+    <h2 class="quick-title">{{ 'dashboard.quickLinks' | translate }}</h2>
+    <div class="grid quick">
+      <a class="quick-link" routerLink="/gifts">
+        <span class="quick-icon" aria-hidden="true">🎁</span>
+        <strong>{{ 'dashboard.manageGifts' | translate }}</strong>
+        <span>{{ 'dashboard.manageGiftsText' | translate }}</span>
+      </a>
+      <a class="quick-link" routerLink="/reservations">
+        <span class="quick-icon" aria-hidden="true">📋</span>
+        <strong>{{ 'dashboard.manageReservations' | translate }}</strong>
+        <span>{{ 'dashboard.manageReservationsText' | translate }}</span>
+      </a>
+      <a class="quick-link" routerLink="/event">
+        <span class="quick-icon" aria-hidden="true">🗓️</span>
+        <strong>{{ 'dashboard.editEvent' | translate }}</strong>
+        <span>{{ 'dashboard.editEventText' | translate }}</span>
+      </a>
+    </div>
+  </section>
+} @else if (!error()) {
+  <p class="muted" role="status">{{ 'common.loading' | translate }}</p>
+}

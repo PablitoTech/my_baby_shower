@@ -1,0 +1,67 @@
+<a class="skip-link" href="#main">{{ 'nav.skipToContent' | translate }}</a>
+
+<header class="site-header">
+  <div class="container bar">
+    <app-brand />
+
+    <button
+      type="button"
+      class="menu-toggle"
+      [attr.aria-expanded]="menuOpen()"
+      aria-controls="site-nav"
+      [attr.aria-label]="(menuOpen() ? 'nav.closeMenu' : 'nav.openMenu') | translate"
+      (click)="menuOpen.set(!menuOpen())"
+    >
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav id="site-nav" class="nav" [class.open]="menuOpen()" [attr.aria-label]="'nav.mainNav' | translate">
+      <a routerLink="/" fragment="how">{{ 'nav.howItWorks' | translate }}</a>
+      <a routerLink="/" fragment="benefits">{{ 'nav.benefits' | translate }}</a>
+      <app-language-switcher />
+      @if (session.isAuthenticated()) {
+        <a class="btn btn-primary btn-sm" routerLink="/dashboard">{{ 'nav.dashboard' | translate }}</a>
+      } @else {
+        <a class="btn btn-ghost btn-sm" routerLink="/login">{{ 'nav.login' | translate }}</a>
+        <a class="btn btn-primary btn-sm" routerLink="/register">{{ 'nav.register' | translate }}</a>
+      }
+    </nav>
+  </div>
+</header>
+
+<main id="main" tabindex="-1">
+  <router-outlet />
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div>
+      <app-brand />
+      <p class="tagline">{{ 'footer.tagline' | translate }}</p>
+    </div>
+    <div>
+      <h3>{{ 'footer.product' | translate }}</h3>
+      <ul>
+        <li><a routerLink="/">{{ 'nav.home' | translate }}</a></li>
+        <li><a routerLink="/" fragment="how">{{ 'nav.howItWorks' | translate }}</a></li>
+        <li><a routerLink="/" fragment="benefits">{{ 'nav.benefits' | translate }}</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3>{{ 'footer.account' | translate }}</h3>
+      <ul>
+        <li><a routerLink="/register">{{ 'nav.register' | translate }}</a></li>
+        <li><a routerLink="/login">{{ 'nav.login' | translate }}</a></li>
+        <li><a routerLink="/forgot-password">{{ 'auth.login.forgot' | translate }}</a></li>
+      </ul>
+    </div>
+    <div class="lang">
+      <h3>{{ 'common.language' | translate }}</h3>
+      <app-language-switcher />
+    </div>
+  </div>
+  <div class="container copyright">
+    <span>© {{ year }} My Baby Shower. {{ 'footer.rights' | translate }}</span>
+    <span class="made-by">{{ 'footer.madeBy' | translate }}</span>
+  </div>
+</footer>

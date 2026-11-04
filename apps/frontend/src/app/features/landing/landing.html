@@ -1,0 +1,109 @@
+<!-- 1. Hero -->
+<section class="hero">
+  <div class="container hero-grid">
+    <div class="hero-copy fade-up">
+      <p class="eyebrow">{{ 'landing.hero.eyebrow' | translate }}</p>
+      <h1>{{ 'landing.hero.title' | translate }}</h1>
+      <p class="lead">{{ 'landing.hero.subtitle' | translate }}</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary btn-lg" routerLink="/register">{{ 'landing.hero.cta' | translate }}</a>
+        <a class="btn btn-secondary btn-lg" routerLink="/login">{{ 'landing.hero.secondary' | translate }}</a>
+      </div>
+    </div>
+    <div class="hero-art fade-up" style="animation-delay: .15s">
+      <img src="images/hero.svg" width="560" height="480" [alt]="'landing.hero.imageAlt' | translate" fetchpriority="high" />
+    </div>
+  </div>
+  <div class="blob blob-pink" aria-hidden="true"></div>
+  <div class="blob blob-mint" aria-hidden="true"></div>
+</section>
+
+<!-- 2. Presentación -->
+<section class="section intro">
+  <div class="container intro-grid">
+    <img appReveal src="images/gifts.svg" width="400" height="320" [alt]="'landing.intro.imageAlt' | translate" loading="lazy" />
+    <div appReveal>
+      <h2>{{ 'landing.intro.title' | translate }}</h2>
+      <p class="lead">{{ 'landing.intro.text' | translate }}</p>
+      <ul class="stats">
+        <li><span aria-hidden="true">🎁</span>{{ 'landing.intro.stat1' | translate }}</li>
+        <li><span aria-hidden="true">🙌</span>{{ 'landing.intro.stat2' | translate }}</li>
+        <li><span aria-hidden="true">🌎</span>{{ 'landing.intro.stat3' | translate }}</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 3. Cómo funciona -->
+<section id="how" class="section how">
+  <div class="container">
+    <header class="section-header" appReveal>
+      <h2>{{ 'landing.how.title' | translate }}</h2>
+      <p>{{ 'landing.how.subtitle' | translate }}</p>
+    </header>
+    <ol class="steps">
+      @for (step of steps; track step.n) {
+        <li class="step" appReveal [style.transition-delay.ms]="step.n * 80">
+          <span class="step-number" aria-hidden="true">{{ step.n }}</span>
+          <h3>{{ step.title | translate }}</h3>
+          <p>{{ step.text | translate }}</p>
+        </li>
+      }
+    </ol>
+  </div>
+</section>
+
+<!-- 4 y 5. Beneficios -->
+<section id="benefits" class="section benefits">
+  <div class="container">
+    <div class="benefit-block">
+      <img appReveal src="images/parents.svg" width="400" height="320" [alt]="'landing.parents.imageAlt' | translate" loading="lazy" />
+      <div appReveal>
+        <h2>{{ 'landing.parents.title' | translate }}</h2>
+        <ul class="benefit-list">
+          @for (item of parentItems; track item.n) {
+            <li>
+              <span class="benefit-icon parents" aria-hidden="true">{{ item.icon }}</span>
+              <div>
+                <h3>{{ 'landing.parents.item' + item.n + 'Title' | translate }}</h3>
+                <p>{{ 'landing.parents.item' + item.n + 'Text' | translate }}</p>
+              </div>
+            </li>
+          }
+        </ul>
+      </div>
+    </div>
+
+    <div class="benefit-block reverse">
+      <img appReveal src="images/guests.svg" width="400" height="320" [alt]="'landing.guests.imageAlt' | translate" loading="lazy" />
+      <div appReveal>
+        <h2>{{ 'landing.guests.title' | translate }}</h2>
+        <ul class="benefit-list">
+          @for (item of guestItems; track item.n) {
+            <li>
+              <span class="benefit-icon guests" aria-hidden="true">{{ item.icon }}</span>
+              <div>
+                <h3>{{ 'landing.guests.item' + item.n + 'Title' | translate }}</h3>
+                <p>{{ 'landing.guests.item' + item.n + 'Text' | translate }}</p>
+              </div>
+            </li>
+          }
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 y 7. Llamado a la acción -->
+<section class="section">
+  <div class="container">
+    <div class="cta" appReveal>
+      <h2>{{ 'landing.cta.title' | translate }}</h2>
+      <p>{{ 'landing.cta.text' | translate }}</p>
+      <div class="hero-actions center">
+        <a class="btn btn-primary btn-lg" routerLink="/register">{{ 'landing.cta.button' | translate }}</a>
+        <a class="btn btn-secondary btn-lg" routerLink="/login">{{ 'landing.cta.login' | translate }}</a>
+      </div>
+    </div>
+  </div>
+</section>

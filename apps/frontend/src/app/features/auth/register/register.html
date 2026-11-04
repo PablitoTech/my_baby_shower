@@ -1,0 +1,97 @@
+<section class="auth-shell">
+  <div class="auth-card wide">
+    <h1>{{ 'auth.register.title' | translate }}</h1>
+    <p class="subtitle">{{ 'auth.register.subtitle' | translate }}</p>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      @if (error(); as e) {
+        <div class="alert alert-error" role="alert">{{ e | translate }}</div>
+      }
+
+      <fieldset>
+        <legend>{{ 'auth.register.sectionEvent' | translate }}</legend>
+        <div class="form-grid cols-2">
+          <div class="field span-2">
+            <label for="babyName">{{ 'auth.register.babyName' | translate }}</label>
+            <input id="babyName" formControlName="babyName" autocomplete="off" [attr.maxlength]="V.BABY_NAME_MAX"
+              [attr.aria-invalid]="invalid('babyName')" aria-describedby="babyName-hint babyName-error" />
+            <p class="field-hint" id="babyName-hint">{{ 'auth.register.babyNameHint' | translate }}</p>
+            <app-field-error [control]="form.controls.babyName" errorId="babyName-error" />
+          </div>
+          <div class="field">
+            <label for="fatherName">{{ 'auth.register.fatherName' | translate }}</label>
+            <input id="fatherName" formControlName="fatherName" autocomplete="name" [attr.maxlength]="V.PERSON_NAME_MAX"
+              [attr.aria-invalid]="invalid('fatherName')" aria-describedby="fatherName-error" />
+            <app-field-error [control]="form.controls.fatherName" errorId="fatherName-error" />
+          </div>
+          <div class="field">
+            <label for="motherName">{{ 'auth.register.motherName' | translate }}</label>
+            <input id="motherName" formControlName="motherName" autocomplete="name" [attr.maxlength]="V.PERSON_NAME_MAX"
+              [attr.aria-invalid]="invalid('motherName')" aria-describedby="motherName-error" />
+            <app-field-error [control]="form.controls.motherName" errorId="motherName-error" />
+          </div>
+          <div class="field span-2">
+            <label for="eventDate">{{ 'auth.register.eventDate' | translate }}</label>
+            <input id="eventDate" type="datetime-local" formControlName="eventDate"
+              [attr.aria-invalid]="invalid('eventDate')" aria-describedby="eventDate-error" />
+            <app-field-error [control]="form.controls.eventDate" errorId="eventDate-error" />
+          </div>
+          <div class="field span-2">
+            <label for="description">{{ 'auth.register.description' | translate }} <span class="optional">{{ 'common.optional' | translate }}</span></label>
+            <textarea id="description" formControlName="description" rows="3" [attr.maxlength]="V.EVENT_DESCRIPTION_MAX"
+              [placeholder]="'auth.register.descriptionPlaceholder' | translate"
+              [attr.aria-invalid]="invalid('description')" aria-describedby="description-error"></textarea>
+            <app-field-error [control]="form.controls.description" errorId="description-error" />
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>{{ 'auth.register.sectionAccount' | translate }}</legend>
+        <div class="form-grid cols-2">
+          <div class="field">
+            <label for="email">{{ 'auth.register.email' | translate }}</label>
+            <input id="email" type="email" formControlName="email" autocomplete="email"
+              [attr.aria-invalid]="invalid('email')" aria-describedby="email-error" />
+            <app-field-error [control]="form.controls.email" errorId="email-error" />
+          </div>
+          <div class="field">
+            <label for="username">{{ 'auth.register.username' | translate }}</label>
+            <input id="username" formControlName="username" autocomplete="username" autocapitalize="none"
+              [attr.aria-invalid]="invalid('username')" aria-describedby="username-hint username-error" />
+            <p class="field-hint" id="username-hint">{{ 'auth.register.usernameHint' | translate }}</p>
+            <app-field-error [control]="form.controls.username" errorId="username-error" patternKey="validation.usernamePattern" />
+          </div>
+          <div class="field">
+            <label for="password">{{ 'auth.register.password' | translate }}</label>
+            <div class="password-wrap">
+              <input id="password" [type]="showPassword() ? 'text' : 'password'" formControlName="password" autocomplete="new-password"
+                [attr.aria-invalid]="invalid('password')" aria-describedby="password-hint password-error" />
+              <button type="button" (click)="showPassword.set(!showPassword())"
+                [attr.aria-label]="(showPassword() ? 'auth.hidePassword' : 'auth.showPassword') | translate">
+                {{ showPassword() ? '🙈' : '👁️' }}
+              </button>
+            </div>
+            <p class="field-hint" id="password-hint">{{ 'auth.register.passwordHint' | translate }}</p>
+            <app-field-error [control]="form.controls.password" errorId="password-error" patternKey="validation.passwordPattern" />
+          </div>
+          <div class="field">
+            <label for="confirmPassword">{{ 'auth.register.confirmPassword' | translate }}</label>
+            <input id="confirmPassword" [type]="showPassword() ? 'text' : 'password'" formControlName="confirmPassword" autocomplete="new-password"
+              [attr.aria-invalid]="invalid('confirmPassword')" aria-describedby="confirmPassword-error" />
+            <app-field-error [control]="form.controls.confirmPassword" errorId="confirmPassword-error" />
+          </div>
+        </div>
+      </fieldset>
+
+      <button type="submit" class="btn btn-primary btn-lg btn-block" [disabled]="submitting()">
+        {{ (submitting() ? 'common.loading' : 'auth.register.submit') | translate }}
+      </button>
+    </form>
+
+    <p class="auth-footer">
+      {{ 'auth.register.haveAccount' | translate }}
+      <a routerLink="/login">{{ 'auth.register.login' | translate }}</a>
+    </p>
+  </div>
+</section>

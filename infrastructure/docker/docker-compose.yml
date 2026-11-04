@@ -1,0 +1,33 @@
+# Infraestructura de desarrollo local para my_baby_shower.
+# Las credenciales se leen desde environment.m (no versionado):
+#   docker compose -f infrastructure/docker/docker-compose.yml --env-file environment.m up -d
+name: my_baby_shower
+
+services:
+  postgres:
+    image: postgres:18.6-alpine
+    container_name: my_baby_shower_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:?DB_USER no definido en environment.m}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD no definido en environment.m}
+      POSTGRES_DB: ${DB_NAME:?DB_NAME no definido en environment.m}
+      DB_SCHEMA: ${DB_SCHEMA:-public}
+      TZ: UTC
+      PGTZ: UTC
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      # PostgreSQL 18+ guarda los datos en /var/lib/postgresql/<versión>/docker
+      - postgres_data:/var/lib/postgresql
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  postgres_data:
+    name: my_baby_shower_postgres_data

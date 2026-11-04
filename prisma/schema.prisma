@@ -1,0 +1,204 @@
+// Modelo de datos de my_baby_shower.
+// La conexión se configura en prisma.config.ts a partir de environment.m.
+
+generator client {
+  provider               = "prisma-client"
+  output                 = "../apps/backend/src/generated/prisma"
+  moduleFormat           = "esm"
+  importFileExtension    = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum UserRole {
+  PARENT
+  ADMIN
+}
+
+/// Estado de un registro (borrado lógico / desactivación).
+enum RecordStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum GiftStatus {
+  AVAILABLE
+  PARTIALLY_RESERVED
+  RESERVED
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  DELIVERED
+}
+
+// ---------------------------------------------------------------------------
+// Usuarios y autenticación
+// ---------------------------------------------------------------------------
+
+model User {
+  id                  String       @id @default(uuid(7)) @db.Uuid
+  /// Siempre en minúsculas (normalizado por la aplicación).
+  email               String       @unique @db.VarChar(254)
+  /// Siempre en minúsculas (normalizado por la aplicación).
+  username            String       @unique @db.VarChar(30)
+  /// Hash Argon2id. Nunca se almacena la contraseña en texto plano.
+  passwordHash        String       @map("password_hash")
+  role                UserRole     @default(PARENT)
+  status              RecordStatus @default(ACTIVE)
+  failedLoginAttempts Int          @default(0) @map("failed_login_attempts")
+  lockedUntil         DateTime?    @map("locked_until") @db.Timestamptz(3)
+  lastLoginAt         DateTime?    @map("last_login_at") @db.Timestamptz(3)
+  createdAt           DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt           DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  babyShower          BabyShower?
+  sessions            Session[]
+  passwordResetTokens PasswordResetToken[]
+
+  @@map("users")
+}
+
+/// Sesión persistente (refresh token rotativo). Solo se guarda el hash SHA-256.
+model Session {
+  id         String    @id @default(uuid(7)) @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  tokenHash  String    @unique @map("token_hash") @db.Char(64)
+  expiresAt  DateTime  @map("expires_at") @db.Timestamptz(3)
+  revokedAt  DateTime? @map("revoked_at") @db.Timestamptz(3)
+  userAgent  String?   @map("user_agent") @db.VarChar(255)
+  ipAddress  String?   @map("ip_address") @db.VarChar(45)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  lastUsedAt DateTime  @default(now()) @map("last_used_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+/// Token de un solo uso para recuperar la contraseña. Solo se guarda el hash SHA-256.
+model PasswordResetToken {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash") @db.Char(64)
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(3)
+  usedAt    DateTime? @map("used_at") @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+// ---------------------------------------------------------------------------
+// Baby Shower
+// ---------------------------------------------------------------------------
+
+model BabyShower {
+  id          String       @id @default(uuid(7)) @db.Uuid
+  /// Un usuario administra un único Baby Shower.
+  userId      String       @unique @map("user_id") @db.Uuid
+  babyName    String       @map("baby_name") @db.VarChar(60)
+  fatherName  String       @map("father_name") @db.VarChar(100)
+  motherName  String       @map("mother_name") @db.VarChar(100)
+  eventDate   DateTime     @map("event_date") @db.Timestamptz(3)
+  description String?      @db.VarChar(1000)
+  /// Identificador público no predecible usado en el enlace compartido.
+  publicSlug  String?      @unique @map("public_slug") @db.VarChar(80)
+  isPublished Boolean      @default(false) @map("is_published")
+  publishedAt DateTime?    @map("published_at") @db.Timestamptz(3)
+  status      RecordStatus @default(ACTIVE)
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gifts Gift[]
+
+  @@index([isPublished])
+  @@map("baby_showers")
+}
+
+// ---------------------------------------------------------------------------
+// Regalos
+// ---------------------------------------------------------------------------
+
+/// Categoría de regalo. El nombre visible se traduce en el frontend a partir de `code`.
+model Category {
+  id        String       @id @default(uuid(7)) @db.Uuid
+  code      String       @unique @db.VarChar(40)
+  sortOrder Int          @default(0) @map("sort_order")
+  status    RecordStatus @default(ACTIVE)
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  gifts Gift[]
+
+  @@map("categories")
+}
+
+model Gift {
+  id               String       @id @default(uuid(7)) @db.Uuid
+  /// Identificador opaco expuesto en la página pública (no revela el ID interno).
+  publicId         String       @unique @map("public_id") @db.VarChar(24)
+  babyShowerId     String       @map("baby_shower_id") @db.Uuid
+  categoryId       String       @map("category_id") @db.Uuid
+  name             String       @db.VarChar(120)
+  description      String?      @db.VarChar(500)
+  quantityRequired Int          @map("quantity_required")
+  /// Unidades comprometidas por reservas activas (pendientes, confirmadas o entregadas).
+  quantityReserved Int          @default(0) @map("quantity_reserved")
+  imagePath        String?      @map("image_path") @db.VarChar(255)
+  status           GiftStatus   @default(AVAILABLE)
+  recordStatus     RecordStatus @default(ACTIVE) @map("record_status")
+  createdAt        DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt        DateTime?    @map("deleted_at") @db.Timestamptz(3)
+
+  babyShower   BabyShower        @relation(fields: [babyShowerId], references: [id], onDelete: Cascade)
+  category     Category          @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  reservations GiftReservation[]
+
+  @@index([babyShowerId, recordStatus])
+  @@index([categoryId])
+  @@index([status])
+  @@map("gifts")
+}
+
+// ---------------------------------------------------------------------------
+// Reservas
+// ---------------------------------------------------------------------------
+
+model GiftReservation {
+  id               String            @id @default(uuid(7)) @db.Uuid
+  /// Código corto que se muestra al invitado como comprobante.
+  confirmationCode String            @unique @map("confirmation_code") @db.VarChar(16)
+  giftId           String            @map("gift_id") @db.Uuid
+  guestName        String            @map("guest_name") @db.VarChar(120)
+  guestEmail       String?           @map("guest_email") @db.VarChar(254)
+  quantity         Int
+  message          String?           @db.VarChar(500)
+  status           ReservationStatus @default(PENDING)
+  confirmedAt      DateTime?         @map("confirmed_at") @db.Timestamptz(3)
+  cancelledAt      DateTime?         @map("cancelled_at") @db.Timestamptz(3)
+  deliveredAt      DateTime?         @map("delivered_at") @db.Timestamptz(3)
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  gift Gift @relation(fields: [giftId], references: [id], onDelete: Cascade)
+
+  @@index([giftId, status])
+  @@index([status])
+  @@index([createdAt])
+  @@map("gift_reservations")
+}
