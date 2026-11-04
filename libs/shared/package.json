@@ -2,14 +2,14 @@
   "name": "@mbs/shared",
   "version": "0.1.0",
   "private": true,
-  "description": "Lógica de dominio pura compartida (estados, transiciones, utilidades).",
+  "description": "L\u00f3gica de dominio pura compartida (estados, transiciones, utilidades).",
   "type": "module",
-  "exports": { ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" } },
-  "sideEffects": false,
-  "scripts": {
-    "test": "node --test --experimental-strip-types src/*.spec.ts"
+  "exports": {
+    ".": "./src/index.ts"
   },
+  "sideEffects": false,
   "dependencies": {
     "@mbs/contracts": "0.1.0"
-  }
+  },
+  "types": "./src/index.ts"
 }

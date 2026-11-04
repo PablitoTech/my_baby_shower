@@ -1,0 +1,49 @@
+{
+  "name": "@mbs/web",
+  "version": "0.2.0",
+  "private": true,
+  "description": "My Baby Shower: aplicaci\u00f3n full-stack (Next.js: interfaz + API).",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate --schema ../../prisma/schema.prisma && next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:integration": "vitest run --config vitest.integration.config.ts"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^7.0.2",
+    "@mbs/common": "0.1.0",
+    "@mbs/contracts": "0.1.0",
+    "@mbs/shared": "0.1.0",
+    "@prisma/adapter-pg": "7.10.1",
+    "@prisma/client": "7.10.1",
+    "argon2": "^0.45.2",
+    "dotenv": "^18.0.9",
+    "i18next": "^26.7.1",
+    "jose": "^6.2.15",
+    "next": "16.4.5",
+    "pg": "^8.23.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-hook-form": "^7.91.0",
+    "react-i18next": "^17.1.12",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.3.3",
+    "@types/node": "^24.0.0",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.2.1",
+    "jsdom": "^30.0.0",
+    "prisma": "7.10.1",
+    "sass": "^1.107.1",
+    "typescript": "~6.0.3",
+    "vite": "^8.0.0",
+    "vitest": "^4.1.2"
+  }
+}

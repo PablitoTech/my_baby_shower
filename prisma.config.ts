@@ -1,9 +1,10 @@
 import path from 'node:path';
 import { config } from 'dotenv';
-import { defineConfig, env } from 'prisma/config';
+import { defineConfig } from 'prisma/config';
 
-// Las credenciales se cargan desde environment.m (no versionado).
-config({ path: path.resolve(import.meta.dirname, 'environment.m'), quiet: true });
+// En local las variables y credenciales se cargan de `.env` (no versionado).
+// En Vercel/CI llegan como variables de entorno del proyecto.
+config({ path: path.resolve(import.meta.dirname, '.env'), quiet: true });
 
 export default defineConfig({
   schema: 'prisma/schema.prisma',
@@ -12,6 +13,7 @@ export default defineConfig({
     seed: 'tsx prisma/seed.ts',
   },
   datasource: {
-    url: env('DATABASE_URL'),
+    // `prisma generate` no necesita conexión, por eso se permite vacío.
+    url: process.env.DATABASE_URL ?? '',
   },
 });

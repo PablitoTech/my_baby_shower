@@ -1,3 +1,3 @@
-export * from './validation.js';
-export * from './i18n.js';
-export * from './error-codes.js';
+export * from './validation';
+export * from './i18n';
+export * from './error-codes';

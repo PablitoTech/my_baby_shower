@@ -1,4 +1,4 @@
-import type { PublicGift } from './gifts.js';
+import type { PublicGift } from './gifts';
 
 export interface BabyShowerDto {
   id: string;

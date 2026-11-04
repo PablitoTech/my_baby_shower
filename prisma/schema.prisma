@@ -1,11 +1,9 @@
 // Modelo de datos de my_baby_shower.
-// La conexión se configura en prisma.config.ts a partir de environment.m.
+// La conexión se configura en prisma.config.ts a partir de DATABASE_URL (.env).
 
 generator client {
-  provider               = "prisma-client"
-  output                 = "../apps/backend/src/generated/prisma"
-  moduleFormat           = "esm"
-  importFileExtension    = "js"
+  provider = "prisma-client"
+  output   = "../apps/web/src/generated/prisma"
 }
 
 datasource db {
@@ -158,7 +156,6 @@ model Gift {
   quantityRequired Int          @map("quantity_required")
   /// Unidades comprometidas por reservas activas (pendientes, confirmadas o entregadas).
   quantityReserved Int          @default(0) @map("quantity_reserved")
-  imagePath        String?      @map("image_path") @db.VarChar(255)
   status           GiftStatus   @default(AVAILABLE)
   recordStatus     RecordStatus @default(ACTIVE) @map("record_status")
   createdAt        DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
@@ -167,6 +164,7 @@ model Gift {
 
   babyShower   BabyShower        @relation(fields: [babyShowerId], references: [id], onDelete: Cascade)
   category     Category          @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  image        GiftImage?
   reservations GiftReservation[]
 
   @@index([babyShowerId, recordStatus])
@@ -201,4 +199,38 @@ model GiftReservation {
   @@index([status])
   @@index([createdAt])
   @@map("gift_reservations")
+}
+
+// ---------------------------------------------------------------------------
+// Imágenes de regalos
+// ---------------------------------------------------------------------------
+
+/// Imagen de un regalo almacenada en PostgreSQL (compatible con despliegues
+/// serverless como Vercel, donde el disco es efímero). Máximo 2 MB.
+model GiftImage {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  giftId    String   @unique @map("gift_id") @db.Uuid
+  mimeType  String   @map("mime_type") @db.VarChar(20)
+  sizeBytes Int      @map("size_bytes")
+  data      Bytes
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  gift Gift @relation(fields: [giftId], references: [id], onDelete: Cascade)
+
+  @@map("gift_images")
+}
+
+// ---------------------------------------------------------------------------
+// Rate limiting
+// ---------------------------------------------------------------------------
+
+/// Contadores de rate limiting persistidos en BD: funcionan con múltiples
+/// instancias serverless (la memoria no se comparte entre ellas).
+model RateLimit {
+  key     String   @id @db.VarChar(200)
+  count   Int      @default(0)
+  resetAt DateTime @map("reset_at") @db.Timestamptz(3)
+
+  @@index([resetAt])
+  @@map("rate_limits")
 }

@@ -1,0 +1,79 @@
+/* ---------- Marca ---------- */
+.c-brand {
+  display: inline-flex; align-items: center; gap: .55rem; text-decoration: none; color: var(--c-ink);
+  span { font: 600 1.15rem var(--font-display); letter-spacing: -.01em; }
+  b { color: var(--c-pink-deep); font-weight: 600; }
+}
+
+/* ---------- Selector de idioma ---------- */
+.c-lang-switch {
+  display: inline-flex; padding: 3px; border-radius: 999px; background: var(--c-lavender);
+  button {
+    min-width: 40px; min-height: 32px; border: 0; border-radius: 999px; background: transparent;
+    font: 700 0.8rem var(--font-body); color: var(--c-ink-soft); cursor: pointer; transition: background-color .2s, color .2s;
+  }
+  button.active { background: #fff; color: var(--c-lavender-deep); box-shadow: var(--shadow-sm); }
+}
+
+/* ---------- Modal ---------- */
+.c-modal {
+  width: min(560px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); padding: 0; border: 0;
+  border-radius: var(--radius-lg); background: var(--c-surface); color: var(--c-ink); box-shadow: var(--shadow-lg);
+  &[open] { animation: modal-pop .25s var(--ease); }
+  &::backdrop { background: rgb(59 53 72 / 35%); backdrop-filter: blur(3px); }
+  .modal-card { padding: 1.5rem; }
+  header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+  h2 { font-size: 1.35rem; margin: 0; }
+  .close {
+    flex: none; width: 40px; height: 40px; border: 0; border-radius: 50%; background: var(--c-lavender);
+    color: var(--c-ink); font-size: 1.5rem; line-height: 1; cursor: pointer;
+  }
+}
+@keyframes modal-pop { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }
+
+.c-confirm-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: .5rem; margin-top: 1.25rem; }
+
+/* ---------- Toasts ---------- */
+.c-toasts {
+  position: fixed; z-index: 1000; inset: auto 16px 16px 16px; display: flex; flex-direction: column;
+  align-items: center; gap: .5rem; pointer-events: none;
+  @media (min-width: 640px) { inset: auto 24px 24px auto; align-items: flex-end; }
+  .toast {
+    pointer-events: auto; display: flex; align-items: center; gap: .75rem; max-width: 420px; padding: .8rem 1rem;
+    border-radius: var(--radius); background: #fff; box-shadow: var(--shadow-lg); font-weight: 600;
+    animation: fade-up .3s var(--ease) both; border-left: 5px solid var(--c-lavender-deep);
+  }
+  .toast-success { border-left-color: var(--c-mint-deep); }
+  .toast-error { border-left-color: var(--c-danger); }
+  button { border: 0; background: transparent; font-size: 1.25rem; cursor: pointer; color: var(--c-ink-soft); }
+}
+
+/* ---------- Icono de categoría ---------- */
+.c-category-icon { display: grid; place-items: center; width: 100%; height: 100%; font-size: 2.6rem; }
+
+/* ---------- Tarjeta de regalo ---------- */
+.c-gift-card {
+  display: flex; flex-direction: column; height: 100%; overflow: hidden; border-radius: var(--radius);
+  background: #fff; border: 1px solid var(--c-line); box-shadow: var(--shadow-sm);
+  transition: transform .25s var(--ease), box-shadow .25s var(--ease);
+  &:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+  &.done .media { filter: saturate(.6); opacity: .85; }
+  .media { position: relative; aspect-ratio: 16 / 10; background: var(--c-beige); }
+  .media img, .media .c-category-icon { width: 100%; height: 100%; object-fit: cover; }
+  .category {
+    position: absolute; left: .75rem; top: .75rem; padding: .2rem .65rem; border-radius: 999px;
+    background: rgb(255 255 255 / 90%); font-size: .78rem; font-weight: 700;
+  }
+  .body { display: flex; flex-direction: column; gap: .6rem; flex: 1; padding: 1rem 1.1rem 1.1rem; }
+  .title-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: .4rem .5rem; }
+  h3 { flex: 1 1 9rem; min-width: 0; font-size: 1.08rem; margin: 0; overflow-wrap: break-word; hyphens: auto; }
+  .description { margin: 0; color: var(--c-ink-soft); font-size: .92rem; overflow-wrap: anywhere; }
+  .qty small { color: var(--c-ink-soft); font-weight: 600; }
+  .bar { height: 8px; margin-bottom: .3rem; border-radius: 999px; background: var(--c-mint); overflow: hidden; }
+  .bar span { display: block; height: 100%; background: var(--c-lavender-deep); border-radius: inherit; transition: width .6s var(--ease); }
+  .actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: auto; padding-top: .4rem; }
+}
+
+/* ---------- Página 404 ---------- */
+.p-not-found { padding-block: 5rem; }
+.p-event form { max-width: 760px; }

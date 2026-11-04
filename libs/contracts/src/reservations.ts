@@ -1,4 +1,4 @@
-import type { ReservationStatus } from './enums.js';
+import type { ReservationStatus } from './enums';
 
 export interface CreateReservationRequest {
   guestName: string;

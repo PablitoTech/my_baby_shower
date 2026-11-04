@@ -1,3 +1,3 @@
-export * from './gift-status.js';
-export * from './reservation-status.js';
-export * from './slug.js';
+export * from './gift-status';
+export * from './reservation-status';
+export * from './slug';

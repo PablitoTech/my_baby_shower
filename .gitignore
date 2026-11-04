@@ -3,22 +3,20 @@ node_modules/
 
 # Builds
 dist/
-.angular/
+.next/
+out/
 coverage/
 *.tsbuildinfo
+next-env.d.ts
+.vercel
 
 # Entorno y credenciales (NO versionar)
-environment.m
 .env
 .env.*
 !.env.example
 
 # Prisma generado
-apps/backend/src/generated/
-
-# Subidas locales
-uploads/
-!uploads/.gitkeep
+apps/web/src/generated/
 
 # Logs
 *.log

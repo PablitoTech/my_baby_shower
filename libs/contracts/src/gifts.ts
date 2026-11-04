@@ -1,4 +1,4 @@
-import type { GiftStatus } from './enums.js';
+import type { GiftStatus } from './enums';
 
 export interface CategoryDto {
   id: string;

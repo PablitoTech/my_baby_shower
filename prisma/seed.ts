@@ -4,10 +4,9 @@
  */
 import path from 'node:path';
 import { config } from 'dotenv';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '../apps/backend/src/generated/prisma/client.js';
+import { createPrismaClient } from '../apps/web/src/server/db/client';
 
-config({ path: path.resolve(import.meta.dirname, '..', 'environment.m'), quiet: true });
+config({ path: path.resolve(import.meta.dirname, '..', '.env'), quiet: true });
 
 const CATEGORIES = [
   'HYGIENE',
@@ -23,11 +22,7 @@ const CATEGORIES = [
 ] as const;
 
 async function main(): Promise<void> {
-  const adapter = new PrismaPg(
-    { connectionString: process.env.DATABASE_URL },
-    { schema: process.env.DB_SCHEMA ?? 'public' },
-  );
-  const prisma = new PrismaClient({ adapter });
+  const prisma = createPrismaClient(process.env.DATABASE_URL ?? '');
   try {
     for (const [index, code] of CATEGORIES.entries()) {
       await prisma.category.upsert({

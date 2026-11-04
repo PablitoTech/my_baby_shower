@@ -1,4 +1,4 @@
-# Fases del proyecto my_baby_shower
+# Fases del proyecto My Baby Shower
 
 Este documento describe el plan de desarrollo incremental de **my_baby_shower**, basado en la especificación de [`prompt.md`](../prompt.md). Cada fase define su objetivo, las tareas, los entregables y los criterios de aceptación necesarios para darla por terminada.
 
@@ -21,10 +21,11 @@ Este documento describe el plan de desarrollo incremental de **my_baby_shower**,
 | 10 | Internacionalización completa (ES/EN) | Completada |
 | 11 | Pruebas unitarias y de integración | Completada |
 | 12 | Documentación y cierre del MVP | Completada |
+| 13 | Migración a Next.js full-stack y despliegue en Vercel | Completada |
 
 Estados posibles: `Pendiente`, `En progreso`, `Completada`, `Bloqueada`.
 
-> **Última actualización:** 2026-11-04. Todas las fases del MVP están completadas y verificadas. Al final de cada fase hay una sección **Resultado** con lo que se entregó.
+> **Última actualización:** 2026-11-04. Nota: desde la Fase 13 las variables y credenciales locales viven en `.env`, que reemplaza a `environment.m`. Todas las fases del MVP están completadas y verificadas. Al final de cada fase hay una sección **Resultado** con lo que se entregó.
 
 ---
 
@@ -386,6 +387,36 @@ Estados posibles: `Pendiente`, `En progreso`, `Completada`, `Bloqueada`.
 
 - `README.md` con instalación, variables, comandos y API; Swagger; `docs/ARQUITECTURA.md` y `docs/IMAGENES_IA.md`.
 - `npm audit`: 0 vulnerabilidades.
+
+---
+
+## Fase 13 — Migración a Next.js full-stack y despliegue en Vercel
+
+**Objetivo:** unificar la interfaz y la API en una sola aplicación Next.js, dentro del monorepo, desplegable en Vercel y conectada a PostgreSQL en Aiven, manteniendo el mismo UI/UX.
+
+### Tareas
+
+- Sustituir Angular (frontend) y NestJS (backend) por `apps/web` (Next.js 16, App Router), siguiendo el patrón del proyecto de referencia `finance_mgmt_mon`: API en `src/app/api/v1`, JWT con `jose` en cookies y rate limiting en la BD.
+- Portar los servicios de negocio, las reglas y la seguridad a `src/server/`.
+- Portar las páginas y componentes a React, conservando estilos, textos y comportamiento.
+- Reemplazar `class-validator` por esquemas zod compartidos entre formularios y API.
+- Adaptar a serverless: imágenes en PostgreSQL y rate limiting persistido.
+- Configurar la conexión por `DATABASE_URL` con `sslmode` y `schema`, con soporte de CA (Aiven).
+- Reescribir las pruebas: unitarias (Vitest y Testing Library) e integración contra los route handlers reales.
+- Documentar el despliegue (`docs/DESPLIEGUE.md`).
+
+### Criterios de aceptación
+
+- `npm run build` genera la app sin errores de tipos.
+- Las pruebas unitarias y de integración pasan, incluida la de concurrencia.
+- La interfaz se ve y funciona igual que la versión Angular, también en móvil y en ES/EN.
+
+### Resultado
+
+- 15 pruebas unitarias y 17 de integración en verde; `npm audit`: 0 vulnerabilidades.
+- Verificado en el navegador: registro, regalos con modal, publicación, reserva en inglés (el regalo agotado desaparece), reservas y ausencia de scroll horizontal a 375 px.
+- La versión Angular + NestJS queda en el primer commit (`c697b49`).
+- **Pendiente:** aplicar las migraciones en Aiven en cuanto se tenga la contraseña correcta, porque la proporcionada fue rechazada.
 
 ---
 
